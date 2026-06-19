@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-navy: #0F172A;
+  --color-primary-navy-dark: #0A192F;
+  --color-accent-gold: #C5A059;
+  --color-accent-gold-hover: #B38F48;
+  --color-accent-gold-light: #FAF6EE;
+  --color-bg-light: #F4F6F9;
+  --color-success-green: #10B981;
+  --color-info-blue: #3B82F6;
+  --color-warning-orange: #F59E0B;
+  --color-danger-red: #EF4444;
+  --font-sans: var(--font-cairo);
+}
+
+:root {
+  --background: #F4F6F9;
+  --foreground: #0F172A;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  direction: rtl;
+  text-align: right;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Base styles for forms and elements */
+input, select, textarea {
+  outline: none;
+}
