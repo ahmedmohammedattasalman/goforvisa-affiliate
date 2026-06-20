@@ -111,77 +111,77 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         
         {/* Card 1: الشركاء النشطين (Active Partners) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
-          <div className="text-right flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block">الشركاء النشطين</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">342</span>
+        <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+          <div className="text-right flex-1 min-w-0">
+            <span className="text-[10px] text-slate-400 font-extrabold block truncate">الشركاء النشطين</span>
+            <span className="text-xl xl:text-2xl font-black text-slate-800 block mt-1 leading-none">342</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
               <span className="text-[9px] font-black">10.2%+ عن الفترة السابقة</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
-            <Users className="w-5.5 h-5.5" />
+          <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
+            <Users className="w-5 h-5" />
           </div>
         </div>
 
         {/* Card 2: الملفات المنجزة (Completed Files) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
-          <div className="text-right flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block">الملفات المنجزة</span>
-            <span className="text-2xl font-black text-[#059669] block mt-1 leading-none">856</span>
+        <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+          <div className="text-right flex-1 min-w-0">
+            <span className="text-[10px] text-slate-400 font-extrabold block truncate">الملفات المنجزة</span>
+            <span className="text-xl xl:text-2xl font-black text-[#059669] block mt-1 leading-none">856</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
               <span className="text-[9px] font-black">18.3%+ عن الفترة السابقة</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
-            <CheckCircle className="w-5.5 h-5.5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
+            <CheckCircle className="w-5 h-5" />
           </div>
         </div>
 
         {/* Card 3: إجمالي الملفات (Total Files) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
-          <div className="text-right flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block">إجمالي الملفات</span>
-            <span className="text-2xl font-black text-[#0054A6] block mt-1 leading-none">1,248</span>
+        <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+          <div className="text-right flex-1 min-w-0">
+            <span className="text-[10px] text-slate-400 font-extrabold block truncate">إجمالي الملفات</span>
+            <span className="text-xl xl:text-2xl font-black text-[#0054A6] block mt-1 leading-none">1,248</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
               <span className="text-[9px] font-black">15.7%+ عن الفترة السابقة</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
-            <Files className="w-5.5 h-5.5" />
+          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
+            <Files className="w-5 h-5" />
           </div>
         </div>
 
         {/* Card 4: العمولات المستحقة (Due Commissions) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
-          <div className="text-right flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block">العمولات المستحقة</span>
-            <span className="text-xl font-black text-amber-500 block mt-1 leading-none" dir="ltr">45,250.00 DH</span>
+        <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+          <div className="text-right flex-1 min-w-0">
+            <span className="text-[10px] text-slate-400 font-extrabold block truncate">العمولات المستحقة</span>
+            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-amber-500 block mt-1 leading-none" dir="ltr">45,250.00 DH</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
               <span className="text-[9px] font-black">8.3%+ عن الفترة السابقة</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50">
-            <Clock className="w-5.5 h-5.5" />
+          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50">
+            <Clock className="w-5 h-5" />
           </div>
         </div>
 
         {/* Card 5: إجمالي الإيرادات (Total Revenue) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
-          <div className="text-right flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block">إجمالي الإيرادات</span>
-            <span className="text-xl font-black text-emerald-600 block mt-1 leading-none" dir="ltr">120,450.00 DH</span>
+        <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+          <div className="text-right flex-1 min-w-0">
+            <span className="text-[10px] text-slate-400 font-extrabold block truncate">إجمالي الإيرادات</span>
+            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-emerald-600 block mt-1 leading-none" dir="ltr">120,450.00 DH</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
               <span className="text-[9px] font-black">12.5%+ عن الفترة السابقة</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
-            <Wallet className="w-5.5 h-5.5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
+            <Wallet className="w-5 h-5" />
           </div>
         </div>
 
@@ -314,21 +314,21 @@ export default function AdminDashboard() {
                   <text x="18" y="38" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">300</text>
                   <text x="18" y="13" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">400</text>
 
-                  {/* X-axis labels */}
-                  <text x="30" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">ديسمبر</text>
-                  <text x="90" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">فبراير</text>
-                  <text x="150" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">فرانس</text>
-                  <text x="210" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مارس</text>
-                  <text x="250" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل</text>
+                  {/* X-axis labels (shifted right for safe space) */}
+                  <text x="48" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">ديسمبر</text>
+                  <text x="94" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يناير</text>
+                  <text x="140" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">فبراير</text>
+                  <text x="186" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مارس</text>
+                  <text x="232" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل</text>
                   <text x="280" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مايو</text>
 
                   {/* Path 1: Total Files (Blue) */}
-                  <path d="M 30 70.7 L 90 52.7 L 150 50.5 L 210 37.0 L 250 28.0 L 280 20 L 280 110 L 30 110 Z" fill="url(#blue-grad-3)" />
-                  <path d="M 30 70.7 L 90 52.7 L 150 50.5 L 210 37.0 L 250 28.0 L 280 20" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M 48 70.7 L 94 52.7 L 140 50.5 L 186 37.0 L 232 28.0 L 280 20 L 280 110 L 48 110 Z" fill="url(#blue-grad-3)" />
+                  <path d="M 48 70.7 L 94 52.7 L 140 50.5 L 186 37.0 L 232 28.0 L 280 20" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   
                   {/* Path 2: Completed Files (Green) */}
-                  <path d="M 30 86.5 L 90 75.2 L 150 75.2 L 210 50.5 L 250 48.2 L 280 40 L 280 110 L 30 110 Z" fill="url(#green-grad-3)" />
-                  <path d="M 30 86.5 L 90 75.2 L 150 75.2 L 210 50.5 L 250 48.2 L 280 40" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M 48 86.5 L 94 75.2 L 140 75.2 L 186 50.5 L 232 48.2 L 280 40 L 280 110 L 48 110 Z" fill="url(#green-grad-3)" />
+                  <path d="M 48 86.5 L 94 75.2 L 140 75.2 L 186 50.5 L 232 48.2 L 280 40" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
                   {/* Data points dots */}
                   <circle cx="280" cy="20" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
