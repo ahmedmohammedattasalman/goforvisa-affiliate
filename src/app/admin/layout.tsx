@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
@@ -55,24 +55,11 @@ const GoForVisaLogo = ({ light = false }: { light?: boolean }) => {
   );
 };
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const router = useRouter();
+function AdminSearchBarInner() {
   const searchParams = useSearchParams();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [adminUser, setAdminUser] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>("employee");
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-
+  const router = useRouter();
+  const pathname = usePathname();
   const searchVal = searchParams.get("search") || "";
-
-
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -84,6 +71,42 @@ export default function AdminLayout({
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
+
+  return (
+    <div className="hidden lg:flex items-center relative w-96">
+      <input
+        type="text"
+        value={searchVal}
+        onChange={handleSearchChange}
+        placeholder="بحث عن شريك، عميل، ملف..."
+        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl text-right text-xs focus:bg-white focus:border-[#0054A6] focus:ring-1 focus:ring-[#0054A6] transition-all text-slate-700 placeholder:text-slate-400 font-medium"
+      />
+      <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5" />
+    </div>
+  );
+}
+
+function AdminSearchBar() {
+  return (
+    <Suspense fallback={<div className="w-96 h-9 bg-slate-50 rounded-2xl animate-pulse"></div>}>
+      <AdminSearchBarInner />
+    </Suspense>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [adminUser, setAdminUser] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("employee");
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const isAdminLogin = pathname === "/admin/login";
 
@@ -341,16 +364,7 @@ export default function AdminLayout({
           </div>
 
           {/* Desktop Center: Search Bar */}
-          <div className="hidden lg:flex items-center relative w-96">
-            <input
-              type="text"
-              value={searchVal}
-              onChange={handleSearchChange}
-              placeholder="بحث عن شريك، عميل، ملف..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl text-right text-xs focus:bg-white focus:border-[#0054A6] focus:ring-1 focus:ring-[#0054A6] transition-all text-slate-700 placeholder:text-slate-400 font-medium"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5" />
-          </div>
+          <AdminSearchBar />
 
           {/* Desktop Left: Support messages & notifications */}
           <div className="hidden lg:flex items-center gap-3">
