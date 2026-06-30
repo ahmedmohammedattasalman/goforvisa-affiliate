@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { 
@@ -17,55 +17,227 @@ import {
 } from "lucide-react";
 
 // Custom country flag SVG components for crisp cross-platform rendering (including Windows!)
-const FranceFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="1" height="2" fill="#002395" />
-    <rect x="1" width="1" height="2" fill="#FFFFFF" />
-    <rect x="2" width="1" height="2" fill="#ED2939" />
+const UkFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 50 30">
+    <rect width="50" height="30" fill="#012169" />
+    <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#FFFFFF" strokeWidth="6" />
+    <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#C8102E" strokeWidth="4" />
+    <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#FFFFFF" strokeWidth="10" />
+    <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#C8102E" strokeWidth="6" />
   </svg>
 );
 
-const SpainFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#C60B1E" />
-    <rect y="0.5" width="3" height="1" fill="#FBE122" />
+const CanadaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 240 120">
+    <rect width="60" height="120" fill="#D80027" />
+    <rect x="60" width="120" height="120" fill="#FFFFFF" />
+    <rect x="180" width="60" height="120" fill="#D80027" />
+    <path d="M 120,32 L 123,43 L 131,39 L 128,48 L 137,49 L 128,55 L 132,66 L 123,61 L 122,85 L 118,85 L 117,61 L 108,66 L 112,55 L 103,49 L 112,48 L 109,39 L 117,43 Z" fill="#D80027" />
   </svg>
 );
 
-const ItalyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="1" height="2" fill="#009246" />
-    <rect x="1" width="1" height="2" fill="#F1F2F1" />
-    <rect x="2" width="1" height="2" fill="#CE2B37" />
+const UsaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 76 40">
+    <rect width="76" height="40" fill="#FFFFFF" />
+    <rect width="76" height="3.08" fill="#B22234" />
+    <rect y="6.15" width="76" height="3.08" fill="#B22234" />
+    <rect y="12.31" width="76" height="3.08" fill="#B22234" />
+    <rect y="18.46" width="76" height="3.08" fill="#B22234" />
+    <rect y="24.62" width="76" height="3.08" fill="#B22234" />
+    <rect y="30.77" width="76" height="3.08" fill="#B22234" />
+    <rect y="36.92" width="76" height="3.08" fill="#B22234" />
+    <rect width="30.4" height="21.54" fill="#3C3B6E" />
+    <circle cx="5" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="10" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="15" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="20" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="25" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="7.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="12.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="17.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="22.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="5" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="10" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="15" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="20" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="25" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="7.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="12.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="17.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="22.5" cy="16" r="1" fill="#FFFFFF" />
   </svg>
 );
 
-const TurkeyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#E30A17" />
-    <circle cx="1.1" cy="1" r="0.4" fill="#FFFFFF" />
-    <circle cx="1.2" cy="1" r="0.32" fill="#E30A17" />
-    <polygon points="1.6,1 1.45,1.07 1.48,0.9 1.35,0.8 1.52,0.8" fill="#FFFFFF" />
+const DenmarkFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 37 28">
+    <rect width="37" height="28" fill="#C8102E" />
+    <rect x="12" width="4" height="28" fill="#FFFFFF" />
+    <rect y="12" width="37" height="4" fill="#FFFFFF" />
   </svg>
 );
 
-const GermanyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#FFCF00" />
-    <rect width="3" height="1.33" fill="#DD0000" />
-    <rect width="3" height="0.67" fill="#000000" />
+const AustraliaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 80 40">
+    <rect width="80" height="40" fill="#012169" />
+    <g transform="scale(0.8)">
+      <rect width="50" height="25" fill="#012169" />
+      <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#FFFFFF" strokeWidth="5" />
+      <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#C8102E" strokeWidth="3" />
+      <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#FFFFFF" strokeWidth="8" />
+      <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#C8102E" strokeWidth="5" />
+    </g>
+    <polygon points="20,26 21,30 25,30 22,33 23,37 20,35 17,37 18,33 15,30 19,30" fill="#FFFFFF" />
+    <circle cx="60" cy="8" r="1.5" fill="#FFFFFF" />
+    <circle cx="70" cy="16" r="1.5" fill="#FFFFFF" />
+    <circle cx="60" cy="24" r="1.5" fill="#FFFFFF" />
+    <circle cx="50" cy="18" r="1.5" fill="#FFFFFF" />
+    <circle cx="65" cy="30" r="1" fill="#FFFFFF" />
   </svg>
 );
 
 export default function DashboardOverview() {
   const { 
     partner, 
+    clients,
+    withdrawals,
+    notifications,
     currentBalance, 
-    totalCommissions 
+    totalCommissions,
+    paidCommissions,
+    loading
   } = useApp();
 
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [lineFilterOpen, setLineFilterOpen] = useState(false);
+  const [currentDateLabel, setCurrentDateLabel] = useState("");
+  const [timeRange, setTimeRange] = useState<"today" | "7days" | "thisMonth" | "all">("all");
+
+  // Filter clients based on timeRange
+  const filteredClients = clients.filter(c => {
+    if (!c.date) return true;
+    const createdDate = new Date(c.date);
+    const today = new Date();
+    
+    const createdZero = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+    const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (timeRange === "today") {
+      return createdZero.getTime() === todayZero.getTime();
+    }
+    if (timeRange === "7days") {
+      const sevenDaysAgo = new Date(todayZero);
+      sevenDaysAgo.setDate(todayZero.getDate() - 7);
+      return createdZero >= sevenDaysAgo;
+    }
+    if (timeRange === "thisMonth") {
+      return createdZero.getMonth() === todayZero.getMonth() && createdZero.getFullYear() === todayZero.getFullYear();
+    }
+    return true; // "all"
+  });
+
+  useEffect(() => {
+    const today = new Date();
+    const formatted = today.toLocaleDateString("ar-EG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+    setCurrentDateLabel(formatted);
+  }, []);
+
+  const getCountryFlag = (countryName: string) => {
+    if (countryName.includes("المملكة المتحدة") || countryName.includes("بريطانيا") || countryName.includes("UK") || countryName.includes("Uk")) return <UkFlag />;
+    if (countryName.includes("كندا")) return <CanadaFlag />;
+    if (countryName.includes("الولايات المتحدة") || countryName.includes("أمريكا") || countryName.includes("USA") || countryName.includes("Usa")) return <UsaFlag />;
+    if (countryName.includes("الدنمارك")) return <DenmarkFlag />;
+    if (countryName.includes("أستراليا")) return <AustraliaFlag />;
+    return <UsaFlag />;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل بيانات لوحة التحكم...</p>
+      </div>
+    );
+  }
+
+  // Stats Calculations
+  const totalFiles = filteredClients.length;
+  const completedFiles = filteredClients.filter(c => c.status === "تم الإنجاز").length;
+  const processingFiles = filteredClients.filter(c => c.status === "قيد المعالجة").length;
+  const underReviewFiles = filteredClients.filter(c => c.status === "في انتظار البيانات").length;
+  const cancelledFiles = filteredClients.filter(c => c.status === "ملغى").length;
+
+  const pendingWithdrawalSum = withdrawals
+    .filter(w => w.status === "قيد المراجعة")
+    .reduce((sum, w) => sum + w.amount, 0);
+
+  const avgCommission = totalFiles > 0 ? (totalCommissions / totalFiles) : 500;
+
+  // Doughnut segments calculations
+  const totalF = totalFiles || 1;
+  const lenCompleted = (completedFiles / totalF) * 219.9;
+  const lenPending = (underReviewFiles / totalF) * 219.9;
+  const lenProcessing = (processingFiles / totalF) * 219.9;
+  const lenCancelled = (cancelledFiles / totalF) * 219.9;
+
+  const otherFiles = totalFiles - (completedFiles + underReviewFiles + processingFiles + cancelledFiles);
+  const lenOther = (otherFiles / totalF) * 219.9;
+
+  const offsetCompleted = 0;
+  const offsetOther = -lenCompleted;
+  const offsetCancelled = -(lenCompleted + lenOther);
+  const offsetPending = -(lenCompleted + lenOther + lenCancelled);
+  const offsetProcessing = -(lenCompleted + lenOther + lenCancelled + lenPending);
+
+  // Line Chart week buckets
+  const now = new Date();
+  const getBucketCount = (daysMin: number, daysMax: number) => {
+    return filteredClients.filter(c => {
+      const createdDate = new Date(c.date);
+      const diffTime = now.getTime() - createdDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      return diffDays >= daysMin && diffDays < daysMax;
+    }).length;
+  };
+
+  const buckets = [
+    getBucketCount(24, 30),
+    getBucketCount(18, 24),
+    getBucketCount(12, 18),
+    getBucketCount(6, 12),
+    getBucketCount(0, 6)
+  ];
+
+  const maxBucketVal = Math.max(...buckets, 5);
+  const getY = (val: number) => 110 - (val / maxBucketVal) * 90;
+
+  const y0 = getY(buckets[0]);
+  const y1 = getY(buckets[1]);
+  const y2 = getY(buckets[2]);
+  const y3 = getY(buckets[3]);
+  const y4 = getY(buckets[4]);
+
+  const pathD = `M 15 ${y0} C 47.5 ${y0}, 47.5 ${y1}, 80 ${y1} C 112.5 ${y1}, 112.5 ${y2}, 145 ${y2} C 177.5 ${y2}, 177.5 ${y3}, 210 ${y3} C 242.5 ${y3}, 242.5 ${y4}, 275 ${y4}`;
+  const fillD = `${pathD} L 275 110 L 15 110 Z`;
+
+  const getArabicDateLabel = (daysAgo: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return d.toLocaleDateString("ar-EG", { month: "short", day: "numeric" });
+  };
+
+  const getSelectedLabel = () => {
+    if (timeRange === "today") return `اليوم (${currentDateLabel})`;
+    if (timeRange === "7days") return "آخر 7 أيام";
+    if (timeRange === "thisMonth") return "هذا الشهر";
+    return "كل الأوقات";
+  };
+
+  const recentFilesList = [...filteredClients].slice(0, 5);
+  const recentNotifications = [...notifications].slice(0, 4);
 
   return (
     <div className="space-y-6 font-sans text-right pb-12" dir="rtl">
@@ -76,7 +248,7 @@ export default function DashboardOverview() {
         {/* Greeting Banner (Right side in RTL) */}
         <div className="space-y-1 py-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 flex items-center justify-start gap-2">
-            مرحبًا بك، {partner?.name || "أحمد بن ياسين"} 👋
+            مرحبًا بك، {partner?.name || "أحمد"} 👋
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
             تابع أداء ملفاتك وأرباحك بسهولة من لوحة التحكم
@@ -90,15 +262,35 @@ export default function DashboardOverview() {
             className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white border border-slate-200/60 rounded-2xl hover:bg-slate-50 transition-colors text-slate-600 text-xs font-bold shadow-xs w-full sm:w-auto"
           >
             <Calendar className="w-4 h-4 text-slate-400" />
-            <span>21 مايو 2024</span>
+            <span>{getSelectedLabel()}</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 mr-2" />
           </button>
           {dateFilterOpen && (
             <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-lg py-1.5 z-30 text-right">
-              <button onClick={() => setDateFilterOpen(false)} className="w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 text-slate-700">21 مايو 2024 (اليوم)</button>
-              <button onClick={() => setDateFilterOpen(false)} className="w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 text-slate-700">آخر 7 أيام</button>
-              <button onClick={() => setDateFilterOpen(false)} className="w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 text-slate-700">هذا الشهر</button>
-              <button onClick={() => setDateFilterOpen(false)} className="w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 text-slate-700">مايو 2024</button>
+              <button 
+                onClick={() => { setTimeRange("all"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "all" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                كل الأوقات
+              </button>
+              <button 
+                onClick={() => { setTimeRange("today"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "today" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                اليوم
+              </button>
+              <button 
+                onClick={() => { setTimeRange("7days"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "7days" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                آخر 7 أيام
+              </button>
+              <button 
+                onClick={() => { setTimeRange("thisMonth"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "thisMonth" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                هذا الشهر
+              </button>
             </div>
           )}
         </div>
@@ -114,8 +306,8 @@ export default function DashboardOverview() {
             <Clock className="w-5 h-5" />
           </div>
           <div className="text-left flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">قيد المراجعة</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">18</span>
+            <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">في انتظار البيانات</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{underReviewFiles}</span>
             <span className="text-[9px] text-slate-400 font-bold block mt-1">ملف</span>
           </div>
         </div>
@@ -127,7 +319,7 @@ export default function DashboardOverview() {
           </div>
           <div className="text-left flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">قيد المعالجة</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">27</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{processingFiles}</span>
             <span className="text-[9px] text-slate-400 font-bold block mt-1">ملف</span>
           </div>
         </div>
@@ -139,7 +331,7 @@ export default function DashboardOverview() {
           </div>
           <div className="text-left flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">تم الإنجاز</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">64</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{completedFiles}</span>
             <span className="text-[9px] text-slate-400 font-bold block mt-1">ملف</span>
           </div>
         </div>
@@ -151,7 +343,7 @@ export default function DashboardOverview() {
           </div>
           <div className="text-left flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">ملغاة / مرفوضة</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">5</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{cancelledFiles}</span>
             <span className="text-[9px] text-slate-400 font-bold block mt-1">ملفات</span>
           </div>
         </div>
@@ -171,13 +363,13 @@ export default function DashboardOverview() {
               <div className="space-y-0.5 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">الرصيد الحالي</span>
                 <span className="text-2xl font-black text-emerald-600 block leading-tight">
-                  12,500.00 <span className="text-xs font-bold text-emerald-600/80">DH</span>
+                  {currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-xs font-bold text-emerald-600/80">DH</span>
                 </span>
                 <span className="text-[9px] text-slate-400 font-bold block">الرصيد المتاح للسحب</span>
               </div>
               <div className="space-y-0.5 text-left">
                 <span className="text-[10px] text-slate-400 font-bold block">إجمالي الملفات</span>
-                <span className="text-2xl font-black text-slate-800 block leading-tight">128</span>
+                <span className="text-2xl font-black text-slate-800 block leading-tight">{totalFiles}</span>
                 <span className="text-[9px] text-slate-400 font-bold block">كل الملفات</span>
               </div>
             </div>
@@ -187,7 +379,9 @@ export default function DashboardOverview() {
               <div className="flex-1 bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 flex justify-between items-center gap-2">
                 <div className="text-right">
                   <span className="text-[9px] text-slate-400 font-bold block">مستحقة</span>
-                  <span className="text-xs font-black text-slate-700 block mt-0.5">2,000.00 DH</span>
+                  <span className="text-xs font-black text-slate-700 block mt-0.5">
+                    {pendingWithdrawalSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                  </span>
                 </div>
                 <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500 shrink-0">
                   <Clock className="w-4 h-4" />
@@ -196,7 +390,9 @@ export default function DashboardOverview() {
               <div className="flex-1 bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 flex justify-between items-center gap-2">
                 <div className="text-right">
                   <span className="text-[9px] text-slate-400 font-bold block">مدفوعة</span>
-                  <span className="text-xs font-black text-slate-700 block mt-0.5">10,500.00 DH</span>
+                  <span className="text-xs font-black text-slate-700 block mt-0.5">
+                    {paidCommissions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                  </span>
                 </div>
                 <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500 shrink-0">
                   <CheckCircle className="w-4 h-4" />
@@ -242,7 +438,9 @@ export default function DashboardOverview() {
                   </div>
                   <span className="text-xs text-slate-500 font-bold">إجمالي الأرباح</span>
                 </div>
-                <span className="text-xs font-extrabold text-slate-700" dir="ltr">25,500.00 DH</span>
+                <span className="text-xs font-extrabold text-slate-700" dir="ltr">
+                  {totalCommissions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
               </div>
 
               {/* Row 2 */}
@@ -253,7 +451,7 @@ export default function DashboardOverview() {
                   </div>
                   <span className="text-xs text-slate-500 font-bold">إجمالي الملفات المنجزة</span>
                 </div>
-                <span className="text-xs font-extrabold text-slate-700">64</span>
+                <span className="text-xs font-extrabold text-slate-700">{completedFiles}</span>
               </div>
 
               {/* Row 3 */}
@@ -264,7 +462,9 @@ export default function DashboardOverview() {
                   </div>
                   <span className="text-xs text-slate-500 font-bold">متوسط العمولة لكل ملف</span>
                 </div>
-                <span className="text-xs font-extrabold text-slate-700" dir="ltr">500.00 DH</span>
+                <span className="text-xs font-extrabold text-slate-700" dir="ltr">
+                  {avgCommission.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
               </div>
 
             </div>
@@ -288,38 +488,48 @@ export default function DashboardOverview() {
                 {/* 1. Legend layout on the right side of charts (RTL: leftmost of block) */}
                 <div className="flex-1 space-y-2 text-right">
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">18 (14.1%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {underReviewFiles} ({totalFiles > 0 ? ((underReviewFiles / totalFiles) * 100).toFixed(1) : 0}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">في انتظار البيانات</span>
                       <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
-                      <span className="text-slate-500">قيد المراجعة</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">27 (21.1%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {processingFiles} ({totalFiles > 0 ? ((processingFiles / totalFiles) * 100).toFixed(1) : 0}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
                       <span className="text-slate-500">قيد المعالجة</span>
+                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">64 (50.0%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {completedFiles} ({totalFiles > 0 ? ((completedFiles / totalFiles) * 100).toFixed(1) : 0}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                       <span className="text-slate-500">تم الإنجاز</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">5 (3.9%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {cancelledFiles} ({totalFiles > 0 ? ((cancelledFiles / totalFiles) * 100).toFixed(1) : 0}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
                       <span className="text-slate-500">ملغاة / مرفوضة</span>
+                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">14 (10.9%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {otherFiles} ({totalFiles > 0 ? ((otherFiles / totalFiles) * 100).toFixed(1) : 0}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                       <span className="text-slate-500">أخرى</span>
+                      <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                     </div>
                   </div>
                 </div>
@@ -329,12 +539,12 @@ export default function DashboardOverview() {
                   
                   {/* Absolute overlay values in center */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none mt-1">
-                    <span className="text-xl font-black text-slate-800 leading-none">128</span>
+                    <span className="text-xl font-black text-slate-800 leading-none">{totalFiles}</span>
                     <span className="text-[7px] text-slate-400 font-bold block mt-1">إجمالي الملفات</span>
                   </div>
 
                   <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    {/* Segment 1: Green (تم الإنجاز) - 50.0% */}
+                    {/* Segment 1: Green (تم الإنجاز) */}
                     <circle
                       cx="50"
                       cy="50"
@@ -342,10 +552,10 @@ export default function DashboardOverview() {
                       fill="transparent"
                       stroke="#10B981"
                       strokeWidth="11"
-                      strokeDasharray="110 219.9"
+                      strokeDasharray={`${lenCompleted} 219.9`}
                       strokeDashoffset="0"
                     />
-                    {/* Segment 2: Grey (أخرى) - 10.9% */}
+                    {/* Segment 2: Grey (أخرى) */}
                     <circle
                       cx="50"
                       cy="50"
@@ -353,10 +563,10 @@ export default function DashboardOverview() {
                       fill="transparent"
                       stroke="#94A3B8"
                       strokeWidth="11"
-                      strokeDasharray="24 219.9"
-                      strokeDashoffset="-110"
+                      strokeDasharray={`${lenOther} 219.9`}
+                      strokeDashoffset={offsetOther}
                     />
-                    {/* Segment 3: Red (ملغاة / مرفوضة) - 3.9% */}
+                    {/* Segment 3: Red (ملغاة / مرفوضة) */}
                     <circle
                       cx="50"
                       cy="50"
@@ -364,10 +574,10 @@ export default function DashboardOverview() {
                       fill="transparent"
                       stroke="#EF4444"
                       strokeWidth="11"
-                      strokeDasharray="8.6 219.9"
-                      strokeDashoffset="-134"
+                      strokeDasharray={`${lenCancelled} 219.9`}
+                      strokeDashoffset={offsetCancelled}
                     />
-                    {/* Segment 4: Blue (قيد المراجعة) - 14.1% */}
+                    {/* Segment 4: Blue (في انتظار البيانات) */}
                     <circle
                       cx="50"
                       cy="50"
@@ -375,10 +585,10 @@ export default function DashboardOverview() {
                       fill="transparent"
                       stroke="#3B82F6"
                       strokeWidth="11"
-                      strokeDasharray="31 219.9"
-                      strokeDashoffset="-142.6"
+                      strokeDasharray={`${lenPending} 219.9`}
+                      strokeDashoffset={offsetPending}
                     />
-                    {/* Segment 5: Yellow (قيد المعالجة) - 21.1% */}
+                    {/* Segment 5: Yellow (قيد المعالجة) */}
                     <circle
                       cx="50"
                       cy="50"
@@ -386,8 +596,8 @@ export default function DashboardOverview() {
                       fill="transparent"
                       stroke="#F59E0B"
                       strokeWidth="11"
-                      strokeDasharray="46.3 219.9"
-                      strokeDashoffset="-173.6"
+                      strokeDasharray={`${lenProcessing} 219.9`}
+                      strokeDashoffset={offsetProcessing}
                     />
                   </svg>
                 </div>
@@ -395,7 +605,7 @@ export default function DashboardOverview() {
               </div>
             </div>
             
-            {/* Chart 1: Line Chart "تطور الملفات" (Second in code so it renders on the left in RTL) */}
+            {/* Chart 1: Line Chart "تطور الملفات" */}
             <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-4 flex flex-col justify-between">
               <div className="flex justify-between items-center">
                 <h3 className="font-extrabold text-slate-800 text-sm">تطور الملفات</h3>
@@ -412,8 +622,6 @@ export default function DashboardOverview() {
                   {lineFilterOpen && (
                     <div className="absolute left-0 mt-2 w-32 bg-white border border-slate-100 rounded-xl shadow-lg py-1 z-30 text-right">
                       <button onClick={() => setLineFilterOpen(false)} className="w-full text-right px-3 py-1.5 text-[10px] font-bold hover:bg-slate-50 text-slate-700">آخر 30 يوم</button>
-                      <button onClick={() => setLineFilterOpen(false)} className="w-full text-right px-3 py-1.5 text-[10px] font-bold hover:bg-slate-50 text-slate-700">آخر 6 أشهر</button>
-                      <button onClick={() => setLineFilterOpen(false)} className="w-full text-right px-3 py-1.5 text-[10px] font-bold hover:bg-slate-50 text-slate-700">هذا العام</button>
                     </div>
                   )}
                 </div>
@@ -436,33 +644,32 @@ export default function DashboardOverview() {
                   <line x1="0" y1="85" x2="300" y2="85" stroke="#F1F5F9" strokeWidth="1" />
                   <line x1="0" y1="110" x2="300" y2="110" stroke="#F1F5F9" strokeWidth="1" />
 
-                  {/* Vertical labels or grid lines */}
-                  <text x="15" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل 22</text>
-                  <text x="80" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل 29</text>
-                  <text x="145" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">6 مايو</text>
-                  <text x="210" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">13 مايو</text>
-                  <text x="275" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">20 مايو</text>
+                  {/* Vertical labels */}
+                  <text x="15" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getArabicDateLabel(24)}</text>
+                  <text x="80" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getArabicDateLabel(18)}</text>
+                  <text x="145" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getArabicDateLabel(12)}</text>
+                  <text x="210" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getArabicDateLabel(6)}</text>
+                  <text x="275" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getArabicDateLabel(0)}</text>
 
                   {/* Left axes labels */}
                   <text x="295" y="112" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">0</text>
-                  <text x="295" y="88" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">5</text>
-                  <text x="295" y="63" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">10</text>
-                  <text x="295" y="38" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">15</text>
-                  <text x="295" y="13" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">20</text>
-                  <text x="295" y="3" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">25</text>
+                  <text x="295" y="88" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">{Math.round(maxBucketVal * 0.25)}</text>
+                  <text x="295" y="63" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">{Math.round(maxBucketVal * 0.5)}</text>
+                  <text x="295" y="38" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">{Math.round(maxBucketVal * 0.75)}</text>
+                  <text x="295" y="13" textAnchor="end" className="text-[7px] fill-slate-300 font-bold">{maxBucketVal}</text>
 
                   {/* Curved path gradient fill */}
-                  <path d="M 15 105 C 47.5 90, 47.5 90, 80 82 C 112.5 74, 112.5 50, 145 42 C 177.5 34, 177.5 54, 210 46 C 242.5 38, 242.5 22, 275 34 L 275 110 L 15 110 Z" fill="url(#blue-grad)" />
+                  <path d={`M 15 ${y0} C 47.5 ${y0}, 47.5 ${y1}, 80 ${y1} C 112.5 ${y1}, 112.5 ${y2}, 145 ${y2} C 177.5 ${y2}, 177.5 ${y3}, 210 ${y3} C 242.5 ${y3}, 242.5 ${y4}, 275 ${y4} L 275 110 L 15 110 Z`} fill="url(#blue-grad)" />
 
                   {/* Curve stroke */}
-                  <path d="M 15 105 C 47.5 90, 47.5 90, 80 82 C 112.5 74, 112.5 50, 145 42 C 177.5 34, 177.5 54, 210 46 C 242.5 38, 242.5 22, 275 34" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d={`M 15 ${y0} C 47.5 ${y0}, 47.5 ${y1}, 80 ${y1} C 112.5 ${y1}, 112.5 ${y2}, 145 ${y2} C 177.5 ${y2}, 177.5 ${y3}, 210 ${y3} C 242.5 ${y3}, 242.5 ${y4}, 275 ${y4}`} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
 
                   {/* Data points */}
-                  <circle cx="15" cy="105" r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                  <circle cx="80" cy="82" r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                  <circle cx="145" cy="42" r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                  <circle cx="210" cy="46" r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                  <circle cx="275" cy="34" r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  <circle cx="15" cy={y0} r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  <circle cx="80" cy={y1} r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  <circle cx="145" cy={y2} r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  <circle cx="210" cy={y3} r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  <circle cx="275" cy={y4} r="3.5" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
                 </svg>
               </div>
 
@@ -478,7 +685,7 @@ export default function DashboardOverview() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  <span>قيد المراجعة</span>
+                  <span>في انتظار البيانات</span>
                 </div>
               </div>
 
@@ -516,107 +723,50 @@ export default function DashboardOverview() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                      
-                      {/* Row 1 */}
-                      <tr className="hover:bg-slate-50/40 transition-colors">
-                        <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">GFV-2024-000123</td>
-                        <td className="py-3 font-semibold text-slate-700">
-                          <div className="flex items-center justify-between w-full pl-4">
-                            <span>محمد علي</span>
-                            <div className="flex items-center gap-1.5" dir="rtl">
-                              <span className="text-[10px] text-slate-400 font-bold">فرنسا</span>
-                              <FranceFlag />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-600 whitespace-nowrap">
-                            تم الإنجاز
-                          </span>
-                        </td>
-                        <td className="py-3 text-left font-bold text-slate-800">500 DH</td>
-                      </tr>
-
-                      {/* Row 2 */}
-                      <tr className="hover:bg-slate-50/40 transition-colors">
-                        <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">GFV-2024-000124</td>
-                        <td className="py-3 font-semibold text-slate-700">
-                          <div className="flex items-center justify-between w-full pl-4">
-                            <span>فاطمة الزهراء</span>
-                            <div className="flex items-center gap-1.5" dir="rtl">
-                              <span className="text-[10px] text-slate-400 font-bold">إسبانيا</span>
-                              <SpainFlag />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-50/70 text-amber-600 whitespace-nowrap">
-                            قيد المعالجة
-                          </span>
-                        </td>
-                        <td className="py-3 text-left font-medium text-slate-300">-</td>
-                      </tr>
-
-                      {/* Row 3 */}
-                      <tr className="hover:bg-slate-50/40 transition-colors">
-                        <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">GFV-2024-000125</td>
-                        <td className="py-3 font-semibold text-slate-700">
-                          <div className="flex items-center justify-between w-full pl-4">
-                            <span>أحمد رضا</span>
-                            <div className="flex items-center gap-1.5" dir="rtl">
-                              <span className="text-[10px] text-slate-400 font-bold">إيطاليا</span>
-                              <ItalyFlag />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 whitespace-nowrap">
-                            قيد المراجعة
-                          </span>
-                        </td>
-                        <td className="py-3 text-left font-medium text-slate-300">-</td>
-                      </tr>
-
-                      {/* Row 4 */}
-                      <tr className="hover:bg-slate-50/40 transition-colors">
-                        <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">GFV-2024-000126</td>
-                        <td className="py-3 font-semibold text-slate-700">
-                          <div className="flex items-center justify-between w-full pl-4">
-                            <span>سارة بنت عبد الله</span>
-                            <div className="flex items-center gap-1.5" dir="rtl">
-                              <span className="text-[10px] text-slate-400 font-bold">تركيا</span>
-                              <TurkeyFlag />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-50 text-purple-600 whitespace-nowrap">
-                            جاري التواصل
-                          </span>
-                        </td>
-                        <td className="py-3 text-left font-medium text-slate-300">-</td>
-                      </tr>
-
-                      {/* Row 5 */}
-                      <tr className="hover:bg-slate-50/40 transition-colors">
-                        <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">GFV-2024-000127</td>
-                        <td className="py-3 font-semibold text-slate-700">
-                          <div className="flex items-center justify-between w-full pl-4">
-                            <span>يوسف بلال</span>
-                            <div className="flex items-center gap-1.5" dir="rtl">
-                              <span className="text-[10px] text-slate-400 font-bold">ألمانيا</span>
-                              <GermanyFlag />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-orange-50 text-orange-600 whitespace-nowrap">
-                            قيد إعداد الملف
-                          </span>
-                        </td>
-                        <td className="py-3 text-left font-medium text-slate-300">-</td>
-                      </tr>
-
+                      {recentFilesList.length > 0 ? (
+                        recentFilesList.map((file, idx) => {
+                          // Badge color
+                          let badgeColor = "bg-slate-50 text-slate-500 border-slate-200";
+                          if (file.status === "تم الإنجاز") {
+                            badgeColor = "bg-emerald-50 text-emerald-600";
+                          } else if (file.status === "قيد المعالجة") {
+                            badgeColor = "bg-amber-50/70 text-amber-600";
+                          } else if (file.status === "ملغى") {
+                            badgeColor = "bg-rose-50 text-rose-600";
+                          } else if (file.status === "في انتظار البيانات") {
+                            badgeColor = "bg-blue-50 text-blue-600";
+                          }
+                          
+                          return (
+                            <tr key={file.dbId || idx} className="hover:bg-slate-50/40 transition-colors">
+                              <td className="py-3 pr-1 font-bold text-slate-850 text-[10px]">{file.id}</td>
+                              <td className="py-3 font-semibold text-slate-700">
+                                <div className="flex items-center justify-between w-full pl-4">
+                                  <span>{file.name}</span>
+                                  <div className="flex items-center gap-1.5" dir="rtl">
+                                    <span className="text-[10px] text-slate-400 font-bold">{file.country}</span>
+                                    {getCountryFlag(file.country)}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${badgeColor} whitespace-nowrap`}>
+                                  {file.status}
+                                </span>
+                              </td>
+                              <td className="py-3 text-left font-bold text-slate-800">
+                                {file.status === "تم الإنجاز" ? `${file.commission} DH` : "-"}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-8 text-center text-slate-400 font-bold">
+                            لا توجد ملفات حالياً.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -650,71 +800,37 @@ export default function DashboardOverview() {
 
               {/* Notifications List */}
               <div className="space-y-3.5">
-                
-                {/* Notification 1 */}
-                <div className="flex items-start gap-3 relative pb-3.5 border-b border-slate-50/60 last:border-0 last:pb-0">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 space-y-0.5 text-right">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-slate-400 font-bold">منذ 10 دقائق</span>
-                      <h4 className="text-[11px] font-extrabold text-slate-800">تم إنجاز الملف بنجاح</h4>
-                    </div>
-                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
-                      تم إنجاز الملف رقم GFV-2024-000123 بنجاح وتم إضافة عمولتك.
-                    </p>
-                  </div>
-                </div>
+                {recentNotifications.length > 0 ? (
+                  recentNotifications.map((notif) => {
+                    let badgeColor = "bg-blue-50 text-blue-500";
+                    if (notif.type === "success") {
+                      badgeColor = "bg-emerald-50 text-emerald-500";
+                    } else if (notif.type === "warning") {
+                      badgeColor = "bg-amber-50 text-amber-500";
+                    }
 
-                {/* Notification 2 */}
-                <div className="flex items-start gap-3 relative pb-3.5 border-b border-slate-50/60 last:border-0 last:pb-0">
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 space-y-0.5 text-right">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-slate-400 font-bold">منذ 1 ساعة</span>
-                      <h4 className="text-[11px] font-extrabold text-slate-800">تحديث حالة الملف</h4>
-                    </div>
-                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
-                      تم تحديث حالة الملف رقم GFV-2024-000124 إلى قيد المعالجة.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Notification 3 */}
-                <div className="flex items-start gap-3 relative pb-3.5 border-b border-slate-50/60 last:border-0 last:pb-0">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 space-y-0.5 text-right">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-slate-400 font-bold">منذ 3 ساعات</span>
-                      <h4 className="text-[11px] font-extrabold text-slate-800 text-amber-600">طلب معلومات إضافية</h4>
-                    </div>
-                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
-                      يرجى التواصل مع العميل رقم GFV-2024-000125 لطلب معلومات إضافية.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Notification 4 */}
-                <div className="flex items-start gap-3 relative">
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 space-y-0.5 text-right">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-slate-400 font-bold">منذ 5 ساعات</span>
-                      <h4 className="text-[11px] font-extrabold text-slate-800">ملف جديد</h4>
-                    </div>
-                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
-                      تم استلام ملف جديد رقم GFV-2024-000126.
-                    </p>
-                  </div>
-                </div>
-
+                    return (
+                      <div key={notif.id} className="flex items-start gap-3 relative pb-3.5 border-b border-slate-50/60 last:border-0 last:pb-0">
+                        <div className={`w-8 h-8 rounded-xl ${badgeColor} flex items-center justify-center shrink-0 mt-0.5`}>
+                          <Bell className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 space-y-0.5 text-right">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-slate-400 font-bold">{notif.time}</span>
+                            <h4 className="text-[11px] font-extrabold text-slate-800">إشعار شريك</h4>
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                            {notif.text}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-center text-xs text-slate-400 font-bold py-8">
+                    لا توجد إشعارات حالياً.
+                  </p>
+                )}
               </div>
 
             </div>
@@ -728,3 +844,4 @@ export default function DashboardOverview() {
     </div>
   );
 }
+

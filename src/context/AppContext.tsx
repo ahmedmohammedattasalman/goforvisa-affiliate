@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "../utils/supabase";
 
 // Types
 export interface Partner {
@@ -12,7 +13,8 @@ export interface Partner {
 }
 
 export interface ClientFile {
-  id: string; // e.g. GFV-2024-000123
+  id: string; // Map file_number (e.g. GFV-2024-000123) to id for UI compat
+  dbId: string; // The database UUID
   name: string;
   phone: string;
   email: string;
@@ -27,6 +29,10 @@ export interface ClientFile {
   paid1st: number;
   paid2nd: number;
   notes?: string;
+  city?: string;
+  job?: string;
+  cnss?: string;
+  prevRejection?: string;
 }
 
 export interface PayoutTransaction {
@@ -34,7 +40,7 @@ export interface PayoutTransaction {
   date: string;
   method: string;
   amount: number;
-  status: "تم التحويل" | "قيد المراجعة" | "مرفوض" | "تم الدفع";
+  status: "تم التحويل" | "قيد المراجعة" | "مرفوض" | "تم الدفع" | "قيد المعالجة";
   notes?: string;
 }
 
@@ -60,342 +66,386 @@ interface AppContextProps {
   bankInfo: BankInfo;
   currentBalance: number;
   totalCommissions: number;
+  pendingCommissions: number;
   paidCommissions: number;
   totalSales: number;
   receivedPayments: number;
   remainingPayments: number;
-  login: (email: string, name?: string) => boolean;
-  registerPartner: (partner: Partner) => void;
-  logout: () => void;
-  addClient: (client: Omit<ClientFile, "id" | "date" | "status" | "commission" | "totalFee" | "paid1st" | "paid2nd">) => void;
-  requestWithdrawal: (amount: number, method: string) => { success: boolean; message: string };
-  updateProfile: (profile: Partner) => void;
-  saveBankInfo: (info: BankInfo) => void;
-  markAllAsRead: () => void;
-  deleteNotification: (id: string) => void;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  registerPartner: (partner: Partner, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  addClient: (client: Omit<ClientFile, "id" | "dbId" | "date" | "status" | "commission" | "totalFee" | "paid1st" | "paid2nd">) => Promise<void>;
+  requestWithdrawal: (amount: number, method: string) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (profile: Partner) => Promise<void>;
+  saveBankInfo: (info: BankInfo) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
-// Initial Mock Data
-const INITIAL_CLIENTS: ClientFile[] = [
-  {
-    id: "GFV-2024-000123",
-    name: "زكرياء بنجلون",
-    phone: "+212 6 61 23 45 67",
-    email: "zakaria@gmail.com",
-    nationality: "مغربية",
-    dob: "1994-08-12",
-    country: "الدنمارك",
-    visaType: "سياحة",
-    date: "2024-06-15",
-    status: "تم الإنجاز",
-    commission: 500,
-    totalFee: 3000,
-    paid1st: 1500,
-    paid2nd: 1500,
-  },
-  {
-    id: "GFV-2024-000124",
-    name: "مريم الإدريسي",
-    phone: "+212 6 62 98 76 54",
-    email: "meriem.edr@hotmail.com",
-    nationality: "مغربية",
-    dob: "1990-03-22",
-    country: "المملكة المتحدة",
-    visaType: "سياحة",
-    date: "2024-06-16",
-    status: "قيد المعالجة",
-    commission: 500,
-    totalFee: 3000,
-    paid1st: 1500,
-    paid2nd: 0,
-  },
-  {
-    id: "GFV-2024-000125",
-    name: "عبد الرزاق الصفريوي",
-    phone: "+212 6 71 44 55 66",
-    email: "abderrazzak@outlook.fr",
-    nationality: "مغربية",
-    dob: "1985-11-05",
-    country: "فرنسا",
-    visaType: "سياحة",
-    date: "2024-06-17",
-    status: "في انتظار البيانات",
-    commission: 500,
-    totalFee: 3000,
-    paid1st: 0,
-    paid2nd: 0,
-  },
-  {
-    id: "GFV-2024-000126",
-    name: "محمد العلمي",
-    phone: "+212 6 63 11 22 33",
-    email: "m.alami@yahoo.com",
-    nationality: "مغربية",
-    dob: "1978-05-19",
-    country: "كندا",
-    visaType: "سياحة",
-    date: "2024-06-18",
-    status: "ملغى",
-    commission: 0,
-    totalFee: 3000,
-    paid1st: 0,
-    paid2nd: 0,
-  }
-];
-
-const INITIAL_WITHDRAWALS: PayoutTransaction[] = [
-  {
-    id: "WD-2024-00015",
-    date: "10 يونيو 2024 14:30",
-    method: "تحويل بنكي",
-    amount: 500,
-    status: "تم الدفع",
-    notes: "تم التحويل بنجاح"
-  },
-  {
-    id: "WD-2024-00014",
-    date: "01 يونيو 2024 10:15",
-    method: "Cash Plus",
-    amount: 1000,
-    status: "تم الدفع",
-    notes: "تم التحويل بنجاح"
-  },
-  {
-    id: "WD-2024-00013",
-    date: "25 مايو 2024 16:45",
-    method: "Wafa Cash",
-    amount: 500,
-    status: "قيد المراجعة",
-    notes: "جاري مراجعة الطلب"
-  },
-  {
-    id: "WD-2024-00012",
-    date: "15 مايو 2024 09:20",
-    method: "تحويل بنكي",
-    amount: 500,
-    status: "مرفوض",
-    notes: "بيانات الحساب غير صحيحة"
-  },
-  {
-    id: "WD-2024-00011",
-    date: "05 مايو 2024 11:30",
-    method: "تحويل بنكي",
-    amount: 2000,
-    status: "تم الدفع",
-    notes: "تم التحويل بنجاح"
-  },
-  {
-    id: "WD-2024-00010",
-    date: "25 أبريل 2024 14:00",
-    method: "تحويل بنكي",
-    amount: 1500,
-    status: "تم الدفع",
-    notes: "تم التحويل بنجاح"
-  }
-];
-
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-1",
-    text: "تم تغيير حالة الملف رقم GFV-2024-000123 إلى تم الإنجاز",
-    time: "منذ ساعتين",
-    type: "success",
-    read: false
-  },
-  {
-    id: "notif-2",
-    text: "تمت إضافة عمولة 500 درهم إلى رصيدك المعلق",
-    time: "منذ يوم",
-    type: "info",
-    read: false
-  },
-  {
-    id: "notif-3",
-    text: "ملف العميل عبد الرزاق الصفريوي في انتظار كشف الحساب البنكي لتأكيد الطلب",
-    time: "منذ يومين",
-    type: "warning",
-    read: false
-  }
-];
-
-const INITIAL_BANK: BankInfo = {
-  bankName: "البنك الشعبي (Banque Populaire)",
-  holderName: "أحمد بن ياسين",
-  rib: "123456789012345678901234"
-};
-
-const DEFAULT_PARTNER: Partner = {
-  name: "أحمد بن ياسين",
-  company: "شريك معتمد",
-  phone: "+212 6 12 34 56 78",
-  email: "partner@goforvisa.ma",
-  city: "الدار البيضاء"
+const DEFAULT_BANK: BankInfo = {
+  bankName: "",
+  holderName: "",
+  rib: ""
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [sessionUser, setSessionUser] = useState<any>(null);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [clients, setClients] = useState<ClientFile[]>([]);
   const [withdrawals, setWithdrawals] = useState<PayoutTransaction[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [bankInfo, setBankInfo] = useState<BankInfo>(INITIAL_BANK);
-  
-  // Financial summaries computed based on lists + balance
-  const [currentBalance, setCurrentBalance] = useState(2500);
-  const [totalCommissions, setTotalCommissions] = useState(3000); // balance + pending
-  const [paidCommissions, setPaidCommissions] = useState(5000);
+  const [bankInfo, setBankInfo] = useState<BankInfo>(DEFAULT_BANK);
+  const [loading, setLoading] = useState(true);
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedPartner = localStorage.getItem("gfv_partner");
-      const storedClients = localStorage.getItem("gfv_clients");
-      const storedWithdrawals = localStorage.getItem("gfv_withdrawals");
-      const storedNotifications = localStorage.getItem("gfv_notifications");
-      const storedBank = localStorage.getItem("gfv_bank");
-      const storedBalance = localStorage.getItem("gfv_balance");
-
-      if (storedPartner) {
-        setPartner(JSON.parse(storedPartner));
-      } else {
-        // Default login for easier demo navigation
-        setPartner(DEFAULT_PARTNER);
-        localStorage.setItem("gfv_partner", JSON.stringify(DEFAULT_PARTNER));
+  // Load data for the active user
+  const fetchAllData = async (userId: string) => {
+    try {
+      // 1. Fetch partner profile
+      const { data: partnerData, error: partnerErr } = await supabase
+        .from("partners")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      
+      if (partnerErr) {
+        // eslint-disable-next-line no-console
+        console.warn("Error fetching partner profile:", partnerErr.message);
+      } else if (partnerData) {
+        setPartner({
+          name: partnerData.name,
+          company: partnerData.company || undefined,
+          phone: partnerData.phone,
+          email: partnerData.email,
+          city: partnerData.city
+        });
       }
 
-      if (storedClients) {
-        setClients(JSON.parse(storedClients));
+      // 2. Fetch bank info
+      const { data: bankData } = await supabase
+        .from("bank_info")
+        .select("*")
+        .eq("partner_id", userId)
+        .maybeSingle();
+
+      if (bankData) {
+        setBankInfo({
+          bankName: bankData.bank_name,
+          holderName: bankData.holder_name,
+          rib: bankData.rib
+        });
       } else {
-        setClients(INITIAL_CLIENTS);
-        localStorage.setItem("gfv_clients", JSON.stringify(INITIAL_CLIENTS));
+        setBankInfo(DEFAULT_BANK);
       }
 
-      let needsMigration = false;
-      if (storedWithdrawals) {
-        const parsed = JSON.parse(storedWithdrawals);
-        if (parsed.some((w: any) => w.id && w.id.startsWith("TXN-"))) {
-          needsMigration = true;
-          setWithdrawals(INITIAL_WITHDRAWALS);
-          localStorage.setItem("gfv_withdrawals", JSON.stringify(INITIAL_WITHDRAWALS));
-        } else {
-          setWithdrawals(parsed);
-        }
-      } else {
-        setWithdrawals(INITIAL_WITHDRAWALS);
-        localStorage.setItem("gfv_withdrawals", JSON.stringify(INITIAL_WITHDRAWALS));
+      // 3. Fetch client files
+      const { data: clientsData } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("partner_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (clientsData) {
+        setClients(
+          clientsData.map((c: any) => ({
+            id: c.file_number,
+            dbId: c.id,
+            name: c.name,
+            phone: c.phone,
+            email: c.email,
+            nationality: c.nationality,
+            dob: c.dob,
+            country: c.country,
+            visaType: c.visa_type,
+            date: c.created_at.split("T")[0],
+            status: c.status,
+            commission: Number(c.commission),
+            totalFee: Number(c.total_fee),
+            paid1st: Number(c.paid_1st),
+            paid2nd: Number(c.paid_2nd),
+            notes: c.notes || undefined,
+            city: c.city || undefined,
+            job: c.job || undefined,
+            cnss: c.cnss || undefined,
+            prevRejection: c.prev_rejection || undefined
+          }))
+        );
       }
 
-      if (storedNotifications) {
-        setNotifications(JSON.parse(storedNotifications));
-      } else {
-        setNotifications(INITIAL_NOTIFICATIONS);
-        localStorage.setItem("gfv_notifications", JSON.stringify(INITIAL_NOTIFICATIONS));
+      // 4. Fetch payout requests
+      const { data: payoutsData } = await supabase
+        .from("payouts")
+        .select("*")
+        .eq("partner_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (payoutsData) {
+        setWithdrawals(
+          payoutsData.map((p: any) => ({
+            id: p.id,
+            date: new Date(p.created_at).toLocaleString("ar-EG", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            }),
+            method: p.method,
+            amount: Number(p.amount),
+            status: p.status,
+            notes: p.notes || undefined
+          }))
+        );
       }
 
-      if (storedBank) {
-        setBankInfo(JSON.parse(storedBank));
-      } else {
-        setBankInfo(INITIAL_BANK);
-        localStorage.setItem("gfv_bank", JSON.stringify(INITIAL_BANK));
+      // 5. Fetch notifications
+      const { data: notifData } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("partner_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (notifData) {
+        setNotifications(
+          notifData.map((n: any) => ({
+            id: n.id,
+            text: n.text,
+            time: new Date(n.created_at).toLocaleDateString("ar-EG", {
+              month: "short",
+              day: "numeric"
+            }),
+            type: n.type,
+            read: n.read
+          }))
+        );
       }
 
-      if (storedBalance && !needsMigration && Number(storedBalance) !== 12000) {
-        setCurrentBalance(Number(storedBalance));
-      } else {
-        setCurrentBalance(2500);
-        localStorage.setItem("gfv_balance", "2500");
-      }
+    } catch (err) {
+      console.error("Error loading application state:", err);
     }
+  };
+
+  // Auth session subscriber
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setSessionUser(session.user);
+        fetchAllData(session.user.id).then(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setSessionUser(session.user);
+        fetchAllData(session.user.id);
+      } else {
+        setSessionUser(null);
+        setPartner(null);
+        setClients([]);
+        setWithdrawals([]);
+        setNotifications([]);
+        setBankInfo(DEFAULT_BANK);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Update summaries when lists change
+  // Realtime subscription subscriber
   useEffect(() => {
-    // Paid commissions sum
-    const paidSum = withdrawals
-      .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
-      .reduce((sum, w) => sum + w.amount, 0);
-    setPaidCommissions(paidSum);
+    if (!sessionUser?.id) return;
 
-    // Total commissions = current balance + pending withdrawals
-    const pendingWithdrawalSum = withdrawals
-      .filter(w => w.status === "قيد المراجعة")
-      .reduce((sum, w) => sum + w.amount, 0);
+    const userId = sessionUser.id;
 
-    const totalCalculated = currentBalance + pendingWithdrawalSum;
-    setTotalCommissions(totalCalculated);
-    
-    // Save state to localStorage on updates
-    if (typeof window !== "undefined" && clients.length > 0) {
-      localStorage.setItem("gfv_clients", JSON.stringify(clients));
-      localStorage.setItem("gfv_withdrawals", JSON.stringify(withdrawals));
-      localStorage.setItem("gfv_notifications", JSON.stringify(notifications));
-      localStorage.setItem("gfv_balance", String(currentBalance));
-    }
-  }, [clients, withdrawals, notifications, currentBalance]);
+    // Listen to changes on clients, payouts, notifications, bank_info, and partners
+    const channel = supabase
+      .channel(`realtime_db_changes_${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "clients",
+          filter: `partner_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime update for clients:", payload);
+          fetchAllData(userId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "payouts",
+          filter: `partner_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime update for payouts:", payload);
+          fetchAllData(userId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `partner_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime update for notifications:", payload);
+          fetchAllData(userId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "partners",
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime update for partners:", payload);
+          fetchAllData(userId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bank_info",
+          filter: `partner_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime update for bank_info:", payload);
+          fetchAllData(userId);
+        }
+      )
+      .subscribe();
 
-  // Derived financials
-  const totalSales = clients.length * 3000; // Mock service value 3000 DH per file
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionUser?.id]);
+
+  // Derived financial summaries
+  const totalSales = clients.reduce((sum, c) => sum + c.totalFee, 0);
   const receivedPayments = clients.reduce((sum, c) => sum + c.paid1st + c.paid2nd, 0);
   const remainingPayments = totalSales - receivedPayments;
 
+  const totalCommissions = clients
+    .filter(c => c.status !== "ملغى")
+    .reduce((sum, c) => sum + c.commission, 0);
+
+  const availableCommissions = clients
+    .filter(c => c.status === "تم الإنجاز")
+    .reduce((sum, c) => sum + c.commission, 0);
+
+  const pendingCommissions = clients
+    .filter(c => c.status === "قيد المعالجة" || c.status === "في انتظار البيانات")
+    .reduce((sum, c) => sum + c.commission, 0);
+
+  const paidCommissions = withdrawals
+    .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
+    .reduce((sum, w) => sum + w.amount, 0);
+
+  const pendingWithdrawalSum = withdrawals
+    .filter(w => w.status === "قيد المراجعة")
+    .reduce((sum, w) => sum + w.amount, 0);
+
+  const currentBalance = Math.max(0, availableCommissions - paidCommissions - pendingWithdrawalSum);
+
   // Actions
-  const login = (email: string, name?: string): boolean => {
-    const updatedPartner: Partner = {
-      name: name || DEFAULT_PARTNER.name,
-      company: DEFAULT_PARTNER.company,
-      phone: DEFAULT_PARTNER.phone,
-      email: email,
-      city: DEFAULT_PARTNER.city,
-    };
-    setPartner(updatedPartner);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("gfv_partner", JSON.stringify(updatedPartner));
-    }
-    return true;
-  };
-
-  const registerPartner = (partnerData: Partner) => {
-    setPartner(partnerData);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("gfv_partner", JSON.stringify(partnerData));
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
     }
   };
 
-  const logout = () => {
-    setPartner(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("gfv_partner");
+  const registerPartner = async (partnerData: Partner, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: partnerData.email,
+        password,
+        options: {
+          data: {
+            name: partnerData.name,
+            phone: partnerData.phone,
+            city: partnerData.city,
+            company: partnerData.company || ""
+          }
+        }
+      });
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
     }
   };
 
-  const addClient = (clientData: Omit<ClientFile, "id" | "date" | "status" | "commission" | "totalFee" | "paid1st" | "paid2nd">) => {
-    const nextNum = 123 + clients.length;
-    const fileId = `GFV-2024-000${nextNum}`;
-    const newClient: ClientFile = {
-      ...clientData,
-      id: fileId,
-      date: new Date().toISOString().split("T")[0],
-      status: "قيد المعالجة",
-      commission: 500,
-      totalFee: 3000,
-      paid1st: 1500, // assume first deposit paid
-      paid2nd: 0,
-    };
-
-    const newNotification: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      text: `تم تسجيل الملف الجديد للعميل ${clientData.name} بنجاح تحت المعالجة`,
-      time: "منذ ثوانٍ",
-      type: "info",
-      read: false
-    };
-
-    setClients([newClient, ...clients]);
-    setNotifications([newNotification, ...notifications]);
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
-  const requestWithdrawal = (amount: number, method: string): { success: boolean; message: string } => {
+  const addClient = async (clientData: Omit<ClientFile, "id" | "dbId" | "date" | "status" | "commission" | "totalFee" | "paid1st" | "paid2nd">) => {
+    if (!sessionUser) return;
+    try {
+      // 1. Insert new client record (sequential GFV file_number auto-generated by DB trigger)
+      const { error: clientErr } = await supabase
+        .from("clients")
+        .insert({
+          partner_id: sessionUser.id,
+          name: clientData.name,
+          phone: clientData.phone,
+          email: clientData.email,
+          nationality: clientData.nationality,
+          dob: clientData.dob,
+          country: clientData.country,
+          visa_type: clientData.visaType,
+          city: clientData.city,
+          job: clientData.job,
+          cnss: clientData.cnss,
+          prev_rejection: clientData.prevRejection,
+          notes: clientData.notes
+        });
+
+      if (clientErr) throw clientErr;
+
+      // 2. Insert notification
+      await supabase
+        .from("notifications")
+        .insert({
+          partner_id: sessionUser.id,
+          text: `تم تسجيل الملف الجديد للعميل ${clientData.name} بنجاح تحت المعالجة`,
+          type: "info"
+        });
+
+      // 3. Refresh application state
+      await fetchAllData(sessionUser.id);
+    } catch (err) {
+      console.error("Error adding client file:", err);
+    }
+  };
+
+  const requestWithdrawal = async (amount: number, method: string): Promise<{ success: boolean; message: string }> => {
+    if (!sessionUser) return { success: false, message: "مستخدم غير مسجل." };
     if (amount <= 0) {
       return { success: false, message: "الرجاء إدخال مبلغ صحيح أكبر من الصفر." };
     }
@@ -403,61 +453,108 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: "عذراً، الرصيد الحالي غير كافٍ لإتمام عملية السحب." };
     }
 
-    const nextNum = 10 + withdrawals.length;
-    const nextId = `WD-2024-${String(nextNum).padStart(5, "0")}`;
-    
-    const now = new Date();
-    const months = [
-      "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-      "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
-    ];
-    const formattedDate = `${String(now.getDate()).padStart(2, "0")} ${months[now.getMonth()]} ${now.getFullYear()} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    try {
+      // 1. Insert payout request
+      const { error: payoutErr } = await supabase
+        .from("payouts")
+        .insert({
+          partner_id: sessionUser.id,
+          amount,
+          method,
+          status: "قيد المراجعة",
+          notes: "جاري مراجعة الطلب"
+        });
 
-    const newTx: PayoutTransaction = {
-      id: nextId,
-      date: formattedDate,
-      method: method,
-      amount: amount,
-      status: "قيد المراجعة",
-      notes: "جاري مراجعة الطلب"
-    };
+      if (payoutErr) throw payoutErr;
 
-    const newNotification: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      text: `تم إرسال طلب سحب بقيمة ${amount} درهم عبر ${method} وهو قيد المراجعة`,
-      time: "منذ ثوانٍ",
-      type: "info",
-      read: false
-    };
+      // 2. Insert notification
+      await supabase
+        .from("notifications")
+        .insert({
+          partner_id: sessionUser.id,
+          text: `تم إرسال طلب سحب بقيمة ${amount} درهم عبر ${method} وهو قيد المراجعة`,
+          type: "info"
+        });
 
-    setWithdrawals([newTx, ...withdrawals]);
-    setCurrentBalance(currentBalance - amount);
-    setNotifications([newNotification, ...notifications]);
-    
-    return { success: true, message: "تم إرسال طلب السحب بنجاح. سيتم مراجعته وتحويله قريباً." };
-  };
-
-  const updateProfile = (profileData: Partner) => {
-    setPartner(profileData);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("gfv_partner", JSON.stringify(profileData));
+      // 3. Refresh state
+      await fetchAllData(sessionUser.id);
+      
+      return { success: true, message: "تم إرسال طلب السحب بنجاح. سيتم مراجعته وتحويله قريباً." };
+    } catch (err) {
+      console.error("Error requesting withdrawal:", err);
+      return { success: false, message: "حدث خطأ غير متوقع أثناء إرسال الطلب." };
     }
   };
 
-  const saveBankInfo = (info: BankInfo) => {
-    setBankInfo(info);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("gfv_bank", JSON.stringify(info));
+  const updateProfile = async (profileData: Partner) => {
+    if (!sessionUser) return;
+    try {
+      const { error } = await supabase
+        .from("partners")
+        .update({
+          name: profileData.name,
+          phone: profileData.phone,
+          city: profileData.city,
+          company: profileData.company || ""
+        })
+        .eq("id", sessionUser.id);
+
+      if (error) throw error;
+      await fetchAllData(sessionUser.id);
+    } catch (err) {
+      console.error("Error updating profile:", err);
     }
   };
 
-  const markAllAsRead = () => {
-    const updated = notifications.map(n => ({ ...n, read: true }));
-    setNotifications(updated);
+  const saveBankInfo = async (info: BankInfo) => {
+    if (!sessionUser) return;
+    try {
+      const { error } = await supabase
+        .from("bank_info")
+        .upsert({
+          partner_id: sessionUser.id,
+          bank_name: info.bankName,
+          holder_name: info.holderName,
+          rib: info.rib
+        });
+
+      if (error) throw error;
+      await fetchAllData(sessionUser.id);
+    } catch (err) {
+      console.error("Error saving bank info:", err);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+  const markAllAsRead = async () => {
+    if (!sessionUser) return;
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("partner_id", sessionUser.id)
+        .eq("read", false);
+
+      if (error) throw error;
+      await fetchAllData(sessionUser.id);
+    } catch (err) {
+      console.error("Error marking notifications read:", err);
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    if (!sessionUser) return;
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", id)
+        .eq("partner_id", sessionUser.id);
+
+      if (error) throw error;
+      await fetchAllData(sessionUser.id);
+    } catch (err) {
+      console.error("Error deleting notification:", err);
+    }
   };
 
   return (
@@ -470,10 +567,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         bankInfo,
         currentBalance,
         totalCommissions,
+        pendingCommissions,
         paidCommissions,
         totalSales,
         receivedPayments,
         remainingPayments,
+        loading,
         login,
         registerPartner,
         logout,

@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase";
 import { 
   CreditCard, 
   Clock, 
@@ -33,177 +34,264 @@ export default function AdminWithdrawals() {
   const [searchTerm, setSearchTerm] = useState("");
   const [partnerFilter, setPartnerFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
-  const [dateFrom, setDateFrom] = useState("2024-05-01");
-  const [dateTo, setDateTo] = useState("2024-05-31");
+  
+  // Default date filters: from start of current year to end of current year
+  const currentYear = new Date().getFullYear();
+  const [dateFrom, setDateFrom] = useState(`${currentYear}-01-01`);
+  const [dateTo, setDateTo] = useState(`${currentYear}-12-31`);
 
-  // Mock withdrawal requests list matching Screenshot 4
-  const [requests, setRequests] = useState([
-    {
-      id: "WD-2026-001",
-      partner: "Travel Anamer",
-      partnerInitials: "TA",
-      email: "contact@travelanamer.com",
-      phone: "+212 6 12 34 56 78",
-      availableBalance: "6,850.00 DH",
-      amount: "2,500.00 DH",
-      method: "تحويل بنكي",
-      methodCode: "bank",
-      fee: "10.00 DH",
-      netAmount: "2,490.00 DH",
-      status: "قيد المراجعة",
-      statusKey: "review",
-      date: "2026-06-20 14:35",
-      accountName: "محمد الإدريسي",
-      accountNumber: "230 450 1234567890 4587",
-      partnerNotes: "أرجو التسريع في العملية",
-      adminNotes: "-"
-    },
-    {
-      id: "WD-2026-002",
-      partner: "Go Mosafer",
-      partnerInitials: "GM",
-      email: "finance@gomosafer.com",
-      phone: "+212 6 98 76 54 32",
-      availableBalance: "3,500.00 DH",
-      amount: "1,200.00 DH",
-      method: "Cash Plus",
-      methodCode: "cashplus",
-      fee: "10.00 DH",
-      netAmount: "1,190.00 DH",
-      status: "قيد المعالجة",
-      statusKey: "processing",
-      date: "2026-06-20 11:20",
-      accountName: "سفيان بن علي",
-      accountNumber: "CIN: AB123456 - CashPlus Ref: N/A",
-      partnerNotes: "شكراً لفريق العمل",
-      adminNotes: "-"
-    },
-    {
-      id: "WD-2026-003",
-      partner: "Eagle Tourism",
-      partnerInitials: "ET",
-      email: "accounts@eagletourism.ae",
-      phone: "+971 4 123 4567",
-      availableBalance: "12,400.00 DH",
-      amount: "5,000.00 DH",
-      method: "Wafa Cash",
-      methodCode: "wafacash",
-      fee: "20.00 DH",
-      netAmount: "4,980.00 DH",
-      status: "تم الدفع",
-      statusKey: "paid",
-      date: "2026-06-19 16:45",
-      accountName: "شركة إيجل توريزم",
-      accountNumber: "Wafacash Code: 987654321",
-      partnerNotes: "",
-      adminNotes: "تم تحويل المبلغ بنجاح عبر خدمة وفاء كاش"
-    },
-    {
-      id: "WD-2026-004",
-      partner: "Nile Travel",
-      partnerInitials: "NT",
-      email: "billing@niletravel.com",
-      phone: "+20 2 3456 7890",
-      availableBalance: "1,500.00 DH",
-      amount: "800.00 DH",
-      method: "تحويل بنكي",
-      methodCode: "bank",
-      fee: "10.00 DH",
-      netAmount: "790.00 DH",
-      status: "مرفوض",
-      statusKey: "rejected",
-      date: "2026-06-18 09:30",
-      accountName: "أحمد النيل",
-      accountNumber: "EG93 0002 0124 5556 7890",
-      partnerNotes: "سحب أرباح الأسبوع الماضي",
-      adminNotes: "الحساب البنكي المقدم غير مطابق لبيانات الشريك المعتمدة"
-    },
-    {
-      id: "WD-2026-005",
-      partner: "Atlas Travel",
-      partnerInitials: "AT",
-      email: "contact@atlastravel.ma",
-      phone: "+212 5 22 45 67 89",
-      availableBalance: "8,900.00 DH",
-      amount: "3,000.00 DH",
-      method: "Cash Plus",
-      methodCode: "cashplus",
-      fee: "10.00 DH",
-      netAmount: "2,990.00 DH",
-      status: "قيد المراجعة",
-      statusKey: "review",
-      date: "2026-06-18 13:15",
-      accountName: "ياسين الأطلسي",
-      accountNumber: "CIN: CD987654",
-      partnerNotes: "",
-      adminNotes: "-"
-    },
-    {
-      id: "WD-2026-006",
-      partner: "Visa Expert",
-      partnerInitials: "VE",
-      email: "withdraw@visaexpert.com",
-      phone: "+212 6 55 99 88 77",
-      availableBalance: "4,200.00 DH",
-      amount: "2,000.00 DH",
-      method: "تحويل بنكي",
-      methodCode: "bank",
-      fee: "20.00 DH",
-      netAmount: "1,980.00 DH",
-      status: "تم الدفع",
-      statusKey: "paid",
-      date: "2026-06-17 15:40",
-      accountName: "أنس الفيزا",
-      accountNumber: "181 240 9876543210 1122",
-      partnerNotes: "سحب عمولة ملفات مايو",
-      adminNotes: "تم التحويل بنجاح"
-    }
-  ]);
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  // Selected Request State (defaults to first item)
-  const [selectedId, setSelectedId] = useState("WD-2026-001");
+  const [requests, setRequests] = useState<any[]>([]);
+  const [uniquePartners, setUniquePartners] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState("");
+  const [adminNoteInput, setAdminNoteInput] = useState("");
+
   const selectedRequest = requests.find((r) => r.id === selectedId) || requests[0];
-  const [adminNoteInput, setAdminNoteInput] = useState(selectedRequest?.adminNotes || "");
+
+  // Fetch all payout requests joined with partners and bank info
+  async function loadWithdrawalsData() {
+    try {
+      setLoading(true);
+      
+      // 1. Fetch payouts with partner details
+      const { data: dbPayouts, error: payoutsErr } = await supabase
+        .from("payouts")
+        .select("*, partners(name, company, email, phone)")
+        .order("created_at", { ascending: false });
+
+      // 2. Fetch clients to calculate balances
+      const { data: dbClients, error: clientsErr } = await supabase
+        .from("clients")
+        .select("partner_id, commission, status");
+
+      // 3. Fetch bank info
+      const { data: dbBankInfo } = await supabase
+        .from("bank_info")
+        .select("*");
+
+      if (payoutsErr || clientsErr) {
+        console.error(payoutsErr, clientsErr);
+        return;
+      }
+
+      const clients = dbClients || [];
+      const payouts = dbPayouts || [];
+      const bankInfoList = dbBankInfo || [];
+
+      const mapped = payouts.map((p: any) => {
+        // Calculate partner balance
+        const partnerClients = clients.filter(c => c.partner_id === p.partner_id);
+        const totalCommissions = partnerClients
+          .filter(c => c.status !== "ملغى")
+          .reduce((sum, c) => sum + Number(c.commission !== null && c.commission !== undefined ? c.commission : 500), 0);
+
+        const partnerPayouts = payouts.filter(w => w.partner_id === p.partner_id);
+        const paidCommissions = partnerPayouts
+          .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
+          .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+        const pendingWithdrawalSum = partnerPayouts
+          .filter(w => w.status === "قيد المراجعة")
+          .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+        const currentBalance = totalCommissions - paidCommissions - pendingWithdrawalSum;
+
+        const partnerName = p.partners?.company || p.partners?.name || "شريك عام";
+        const initials = p.partners?.company 
+          ? p.partners.company.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+          : p.partners?.name ? p.partners.name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase() : "ش";
+
+        let statusKey = "review";
+        if (p.status === "قيد المعالجة") statusKey = "processing";
+        else if (p.status === "تم الدفع" || p.status === "تم التحويل") statusKey = "paid";
+        else if (p.status === "مرفوض") statusKey = "rejected";
+
+        // Account / RIB matching
+        const bank = bankInfoList.find(b => b.partner_id === p.partner_id);
+        const accountNumber = bank ? `${bank.bank_name} - ${bank.rib}` : "لم يتم إدخال الحساب البنكي";
+        const accountName = bank ? bank.holder_name : (p.partners?.name || "");
+
+        return {
+          id: p.id ? p.id.substring(0, 8).toUpperCase() : "PAY-NEW",
+          dbId: p.id,
+          partner: partnerName,
+          partnerInitials: initials,
+          email: p.partners?.email || "",
+          phone: p.partners?.phone || "",
+          availableBalance: `${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })} DH`,
+          amount: `${Number(p.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} DH`,
+          amountNum: Number(p.amount),
+          method: p.method,
+          methodCode: p.method === "تحويل بنكي" ? "bank" : p.method.toLowerCase().replace(/\s+/g, ""),
+          fee: p.method === "تحويل بنكي" ? "10.00 DH" : "20.00 DH",
+          netAmount: `${(Number(p.amount) - (p.method === "تحويل بنكي" ? 10 : 20)).toLocaleString('en-US', { minimumFractionDigits: 2 })} DH`,
+          status: p.status,
+          statusKey,
+          rawDate: p.created_at,
+          date: new Date(p.created_at).toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }),
+          accountName,
+          accountNumber,
+          partnerNotes: p.notes || "",
+          adminNotes: p.admin_notes || p.notes || "-"
+        };
+      });
+
+      setRequests(mapped);
+      
+      // Extract unique partners
+      const pNames = Array.from(new Set(mapped.map(r => r.partner))).filter(Boolean);
+      setUniquePartners(pNames);
+
+      if (mapped.length > 0 && !selectedId) {
+        setSelectedId(mapped[0].id);
+      }
+    } catch (err) {
+      console.error("Error loading withdrawals data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadWithdrawalsData();
+
+    // Subscribe to realtime database changes for payouts
+    const channel = supabase
+      .channel("admin_withdrawals_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "payouts" }, () => {
+        loadWithdrawalsData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, () => {
+        loadWithdrawalsData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Update administrative notes when selected request changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedRequest) {
       setAdminNoteInput(selectedRequest.adminNotes);
     }
-  }, [selectedId]);
+  }, [selectedId, selectedRequest]);
 
-  // Handle status updates
-  const handleUpdateStatus = (id: string, newStatus: string, statusKey: string) => {
-    setRequests(prev => prev.map(req => {
-      if (req.id === id) {
-        return { 
-          ...req, 
-          status: newStatus, 
-          statusKey: statusKey,
-          adminNotes: adminNoteInput 
-        };
+  // Handle status updates in Supabase
+  const handleUpdateStatus = async (id: string, newStatus: string, statusKey: string) => {
+    try {
+      const reqObj = requests.find(r => r.id === id);
+      if (!reqObj) return;
+
+      const { error } = await supabase
+        .from("payouts")
+        .update({ status: newStatus, admin_notes: adminNoteInput })
+        .eq("id", reqObj.dbId);
+
+      if (error) {
+        console.error("Error updating payout status:", error);
+        alert("حدث خطأ أثناء تحديث حالة الطلب");
+        return;
       }
-      return req;
-    }));
+
+      // Add a notification for the partner about their payout request update
+      const { data: pData } = await supabase.from("payouts").select("partner_id").eq("id", reqObj.dbId).single();
+      if (pData?.partner_id) {
+        await supabase.from("notifications").insert({
+          partner_id: pData.partner_id,
+          text: `تم تحديث طلب السحب الخاص بك بقيمة ${reqObj.amount} إلى: ${newStatus}`,
+          type: newStatus === "مرفوض" ? "warning" : "success"
+        });
+      }
+
+      await loadWithdrawalsData();
+      alert("تم تحديث حالة الطلب بنجاح");
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
   };
 
-  const handleSaveNotes = () => {
-    setRequests(prev => prev.map(req => {
-      if (req.id === selectedId) {
-        return { ...req, adminNotes: adminNoteInput };
+  const handleSaveNotes = async () => {
+    if (!selectedRequest) return;
+    try {
+      const { error } = await supabase
+        .from("payouts")
+        .update({ admin_notes: adminNoteInput })
+        .eq("id", selectedRequest.dbId);
+
+      if (error) {
+        console.error(error);
+        alert("حدث خطأ أثناء حفظ ملاحظات الإدارة");
+        return;
       }
-      return req;
-    }));
-    alert("تم حفظ ملاحظات الإدارة بنجاح");
+
+      await loadWithdrawalsData();
+      alert("تم حفظ ملاحظات الإدارة بنجاح");
+    } catch (err) {
+      console.error("Error saving notes:", err);
+    }
   };
 
   const handleResetFilters = () => {
     setSearchTerm("");
     setPartnerFilter("all");
     setMethodFilter("all");
-    setDateFrom("2024-05-01");
-    setDateTo("2024-05-31");
+    setDateFrom(`${currentYear}-01-01`);
+    setDateTo(`${currentYear}-12-31`);
   };
+
+  const handleExportCSV = () => {
+    if (filteredRequests.length === 0) {
+      alert("لا توجد بيانات لتصديرها.");
+      return;
+    }
+    
+    const headers = ["رقم الطلب", "الشريك", "البريد الإلكتروني", "رقم الهاتف", "الرصيد المتاح (DH)", "مبلغ السحب (DH)", "طريقة السحب", "الرسوم (DH)", "المبلغ الصافي (DH)", "الحالة", "التاريخ"];
+    const rows = filteredRequests.map(r => [
+      `"${r.id}"`,
+      `"${r.partner.replace(/"/g, '""')}"`,
+      `"${r.email}"`,
+      `"${r.phone}"`,
+      `"${r.availableBalance}"`,
+      `"${r.amount}"`,
+      `"${r.method}"`,
+      `"${r.fee}"`,
+      `"${r.netAmount}"`,
+      `"${r.status}"`,
+      `"${r.date}"`
+    ]);
+    
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `goforvisa_withdrawals_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل طلبات السحب...</p>
+      </div>
+    );
+  }
 
   // Tab Filtering & Query Filtering
   const filteredRequests = requests.filter((req) => {
@@ -217,19 +305,46 @@ export default function AdminWithdrawals() {
     const matchesSearch = req.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           req.partner.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesPartner = partnerFilter === "all" || 
-                          (partnerFilter === "travelanamer" && req.partner.includes("Anamer")) ||
-                          (partnerFilter === "gomosafer" && req.partner.includes("Mosafer")) ||
-                          (partnerFilter === "eagle" && req.partner.includes("Eagle")) ||
-                          (partnerFilter === "nile" && req.partner.includes("Nile"));
+    const matchesPartner = partnerFilter === "all" || req.partner === partnerFilter;
 
-    const matchesMethod = methodFilter === "all" || 
-                          (methodFilter === "bank" && req.methodCode === "bank") ||
-                          (methodFilter === "cashplus" && req.methodCode === "cashplus") ||
-                          (methodFilter === "wafacash" && req.methodCode === "wafacash");
+    const matchesMethod = methodFilter === "all" || req.methodCode === methodFilter;
 
-    return matchesSearch && matchesPartner && matchesMethod;
+    let matchesDate = true;
+    if (req.rawDate) {
+      const reqDate = new Date(req.rawDate);
+      const from = new Date(dateFrom);
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      matchesDate = reqDate >= from && reqDate <= to;
+    }
+
+    return matchesSearch && matchesPartner && matchesMethod && matchesDate;
   });
+
+  // Calculate stats dynamically
+  const kpiStats = {
+    rejectedAmount: requests.filter(r => r.statusKey === "rejected").reduce((sum, r) => sum + r.amountNum, 0),
+    rejectedCount: requests.filter(r => r.statusKey === "rejected").length,
+    paidAmount: requests.filter(r => r.statusKey === "paid").reduce((sum, r) => sum + r.amountNum, 0),
+    paidCount: requests.filter(r => r.statusKey === "paid").length,
+    processingAmount: requests.filter(r => r.statusKey === "processing").reduce((sum, r) => sum + r.amountNum, 0),
+    processingCount: requests.filter(r => r.statusKey === "processing").length,
+    reviewAmount: requests.filter(r => r.statusKey === "review").reduce((sum, r) => sum + r.amountNum, 0),
+    reviewCount: requests.filter(r => r.statusKey === "review").length,
+    totalAmount: requests.reduce((sum, r) => sum + r.amountNum, 0),
+    totalCount: requests.length
+  };
+
+  const tabCounts = {
+    all: requests.length,
+    review: requests.filter(r => r.statusKey === "review").length,
+    processing: requests.filter(r => r.statusKey === "processing").length,
+    paid: requests.filter(r => r.statusKey === "paid").length,
+    rejected: requests.filter(r => r.statusKey === "rejected").length
+  };
+
+  const totalPages = Math.ceil(filteredRequests.length / pageSize) || 1;
+  const paginatedRequests = filteredRequests.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Stylized partner logo helper matching Screenshot 4
   const renderPartnerLogo = (partner: string) => {
@@ -320,8 +435,10 @@ export default function AdminWithdrawals() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right">
             <span className="text-[10px] text-slate-400 font-extrabold block">مرفوضة</span>
-            <span className="text-lg font-black text-rose-600 block mt-1" dir="ltr">5,000.00 DH</span>
-            <span className="text-[9px] text-slate-400 font-bold block mt-1">6 طلبات</span>
+            <span className="text-lg font-black text-rose-600 block mt-1" dir="ltr">
+              {kpiStats.rejectedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">{kpiStats.rejectedCount} طلبات</span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100/50">
             <XCircle className="w-5 h-5" />
@@ -332,8 +449,10 @@ export default function AdminWithdrawals() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right">
             <span className="text-[10px] text-slate-400 font-extrabold block">تم الدفع</span>
-            <span className="text-lg font-black text-emerald-600 block mt-1" dir="ltr">88,450.00 DH</span>
-            <span className="text-[9px] text-slate-400 font-bold block mt-1">95 عملية</span>
+            <span className="text-lg font-black text-emerald-600 block mt-1" dir="ltr">
+              {kpiStats.paidAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">{kpiStats.paidCount} عملية</span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
             <CheckCircle2 className="w-5 h-5" />
@@ -344,8 +463,10 @@ export default function AdminWithdrawals() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right">
             <span className="text-[10px] text-slate-400 font-extrabold block">قيد المعالجة</span>
-            <span className="text-lg font-black text-blue-600 block mt-1" dir="ltr">24,300.00 DH</span>
-            <span className="text-[9px] text-slate-400 font-bold block mt-1">12 طلب</span>
+            <span className="text-lg font-black text-blue-600 block mt-1" dir="ltr">
+              {kpiStats.processingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">{kpiStats.processingCount} طلب</span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
             <RefreshCw className="w-5 h-5" />
@@ -356,8 +477,10 @@ export default function AdminWithdrawals() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right">
             <span className="text-[10px] text-slate-400 font-extrabold block">قيد المراجعة</span>
-            <span className="text-lg font-black text-amber-500 block mt-1" dir="ltr">32,500.00 DH</span>
-            <span className="text-[9px] text-slate-400 font-bold block mt-1">18 طلب</span>
+            <span className="text-lg font-black text-amber-500 block mt-1" dir="ltr">
+              {kpiStats.reviewAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">{kpiStats.reviewCount} طلب</span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50">
             <Clock className="w-5 h-5" />
@@ -368,8 +491,10 @@ export default function AdminWithdrawals() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right">
             <span className="text-[10px] text-slate-400 font-extrabold block">إجمالي طلبات السحب</span>
-            <span className="text-lg font-black text-slate-800 block mt-1" dir="ltr">145,250.00 DH</span>
-            <span className="text-[9px] text-slate-400 font-bold block mt-1">إجمالي 65 طلب</span>
+            <span className="text-lg font-black text-slate-800 block mt-1" dir="ltr">
+              {kpiStats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">إجمالي {kpiStats.totalCount} طلب</span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-slate-50 text-[#0054A6] flex items-center justify-center shrink-0 border border-slate-100">
             <Wallet className="w-5 h-5" />
@@ -398,7 +523,7 @@ export default function AdminWithdrawals() {
             <span className="text-[11px] text-transparent select-none">إعادة</span>
             <button 
               onClick={handleResetFilters}
-              className="flex items-center gap-1.5 px-3 py-2.5 border border-slate-200 text-slate-650 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer text-xs font-bold h-[38px]"
+              className="flex items-center gap-1.5 px-3 py-2.5 border border-slate-200 text-slate-655 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer text-xs font-bold h-[38px]"
               title="إعادة تعيين"
             >
               <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
@@ -430,10 +555,9 @@ export default function AdminWithdrawals() {
                 className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer h-[38px]"
               >
                 <option value="all">كل الشركاء</option>
-                <option value="travelanamer">Travel Anamer</option>
-                <option value="gomosafer">Go Mosafer</option>
-                <option value="eagle">Eagle Tourism</option>
-                <option value="nile">Nile Travel</option>
+                {uniquePartners.map((p, idx) => (
+                  <option key={idx} value={p}>{p}</option>
+                ))}
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
             </div>
@@ -508,13 +632,12 @@ export default function AdminWithdrawals() {
 
         {/* Left Side: Export actions stacked vertically (rendered on Left in RTL) */}
         <div className="flex flex-col gap-2 shrink-0 justify-end pt-5 xl:pt-0">
-          <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-emerald-500 hover:bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-emerald-500 hover:bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
+          >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>تصدير Excel</span>
-          </button>
-          <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-red-500 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap">
-            <FileDown className="w-3.5 h-3.5" />
-            <span>تصدير PDF</span>
           </button>
         </div>
 
@@ -649,7 +772,7 @@ export default function AdminWithdrawals() {
                   onClick={handleSaveNotes}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition-all cursor-pointer text-xs"
                 >
-                  <MessageSquarePlus className="w-4 h-4 text-slate-450" />
+                  <MessageSquarePlus className="w-3.5 h-3.5 text-slate-450" />
                   <span>إضافة ملاحظة</span>
                 </button>
 
@@ -681,44 +804,44 @@ export default function AdminWithdrawals() {
           {/* Status filter tabs (flows Right-to-Left in RTL) */}
           <div className="flex border-b border-slate-100 overflow-x-auto bg-slate-50/30">
             <button 
-              onClick={() => setActiveTab("all")}
+              onClick={() => { setActiveTab("all"); setCurrentPage(1); }}
               className={`px-5 py-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all ${
                 activeTab === "all" ? "border-[#0054A6] text-[#0054A6] bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-650"
               }`}
             >
-              الكل (65)
+              الكل ({tabCounts.all})
             </button>
             <button 
-              onClick={() => setActiveTab("review")}
+              onClick={() => { setActiveTab("review"); setCurrentPage(1); }}
               className={`px-5 py-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all ${
                 activeTab === "review" ? "border-amber-500 text-amber-600 bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-650"
               }`}
             >
-              قيد المراجعة (18)
+              قيد المراجعة ({tabCounts.review})
             </button>
             <button 
-              onClick={() => setActiveTab("processing")}
+              onClick={() => { setActiveTab("processing"); setCurrentPage(1); }}
               className={`px-5 py-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all ${
-                activeTab === "processing" ? "border-blue-500 text-blue-600 bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-650"
+                activeTab === "processing" ? "border-blue-500 text-blue-600 bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-655"
               }`}
             >
-              قيد المعالجة (12)
+              قيد المعالجة ({tabCounts.processing})
             </button>
             <button 
-              onClick={() => setActiveTab("paid")}
+              onClick={() => { setActiveTab("paid"); setCurrentPage(1); }}
               className={`px-5 py-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all ${
                 activeTab === "paid" ? "border-emerald-500 text-emerald-600 bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-650"
               }`}
             >
-              تم الدفع (95)
+              تم الدفع ({tabCounts.paid})
             </button>
             <button 
-              onClick={() => setActiveTab("rejected")}
+              onClick={() => { setActiveTab("rejected"); setCurrentPage(1); }}
               className={`px-5 py-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all ${
                 activeTab === "rejected" ? "border-rose-500 text-rose-600 bg-white font-extrabold" : "border-transparent text-slate-400 hover:text-slate-650"
               }`}
             >
-              مرفوضة (6)
+              مرفوضة ({tabCounts.rejected})
             </button>
           </div>
 
@@ -739,8 +862,8 @@ export default function AdminWithdrawals() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 font-medium">
-                {filteredRequests.length > 0 ? (
-                  filteredRequests.map((req) => {
+                {paginatedRequests.length > 0 ? (
+                  paginatedRequests.map((req) => {
                     const isSelected = req.id === selectedId;
                     
                     // Render status pill styling dynamically
@@ -852,27 +975,49 @@ export default function AdminWithdrawals() {
           {/* Table Pagination */}
           <div className="bg-slate-50/30 px-6 py-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-bold">
             <div className="flex items-center gap-2">
-              <span>عرض 1 - 10 من {filteredRequests.length} طلب</span>
+              <span>
+                عرض {filteredRequests.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} - {Math.min(filteredRequests.length, currentPage * pageSize)} من {filteredRequests.length} طلب
+              </span>
               <div className="relative">
-                <select className="appearance-none bg-white border border-slate-200 rounded-lg pl-6 pr-3 py-1 font-bold text-slate-600 outline-none cursor-pointer">
-                  <option>10</option>
-                  <option>20</option>
-                  <option>50</option>
+                <select 
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="appearance-none bg-white border border-slate-200 rounded-lg pl-6 pr-3 py-1 font-bold text-slate-600 outline-none cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
                 </select>
                 <ChevronDown className="w-3 h-3 text-slate-400 absolute top-1/2 -translate-y-1/2 left-2 pointer-events-none" />
               </div>
             </div>
             
             <div className="flex items-center gap-1.5">
-              <button className="p-1 border border-slate-200 rounded-lg bg-white text-slate-400 hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-1 border border-slate-200 rounded-lg bg-white text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
+              >
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-lg bg-[#0054A6] text-white flex items-center justify-center">1</button>
-              <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">2</button>
-              <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">3</button>
-              <span className="px-1 text-slate-300">...</span>
-              <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">7</button>
-              <button className="p-1 border border-slate-200 rounded-lg bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button 
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-8 h-8 rounded-lg font-bold transition-colors cursor-pointer ${
+                    currentPage === p ? "bg-[#0054A6] text-white" : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-600"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-1 border border-slate-200 rounded-lg bg-white text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
             </div>

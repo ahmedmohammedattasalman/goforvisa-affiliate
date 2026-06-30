@@ -32,13 +32,14 @@ export default function LoginPage() {
 
     setLoading(true);
     
-    // Simulate API delay
-    setTimeout(() => {
-      // Mock login check
-      login(email);
+    login(email, password).then((res) => {
       setLoading(false);
-      router.push("/dashboard");
-    }, 800);
+      if (res.success) {
+        router.push("/dashboard");
+      } else {
+        setError(res.error || "فشل تسجيل الدخول. الرجاء التحقق من البيانات.");
+      }
+    });
   };
 
   return (

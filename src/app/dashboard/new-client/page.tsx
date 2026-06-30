@@ -33,6 +33,11 @@ export default function SendNewClient() {
   const [dob, setDob] = useState("");
   const [passportType, setPassportType] = useState("عادي");
   
+  const [city, setCity] = useState("");
+  const [job, setJob] = useState("موظف قطاع خاص (Salarié du secteur privé)");
+  const [cnss, setCnss] = useState("نعم");
+  const [prevRejection, setPrevRejection] = useState("لا");
+
   const [country, setCountry] = useState("");
   const [visaType, setVisaType] = useState("سياحة");
   const [travelersCount, setTravelersCount] = useState("1");
@@ -41,19 +46,19 @@ export default function SendNewClient() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!name || !phone || !nationality || !country || !visaType) {
+    if (!name || !phone || !nationality || !country || !visaType || !city || !job || !cnss || !prevRejection) {
       setError("الرجاء ملء جميع الحقول المطلوبة التي تحتوي على علامة (*)");
       return;
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      addClient({
+    try {
+      await addClient({
         name,
         phone,
         email: email || "",
@@ -61,28 +66,26 @@ export default function SendNewClient() {
         dob: dob || "",
         country,
         visaType,
+        city,
+        job,
+        cnss,
+        prevRejection,
         notes: `عدد المسافرين: ${travelersCount} | نوع جواز السفر: ${passportType}${notes ? ` | ملاحظات: ${notes}` : ""}`
       });
       setLoading(false);
       router.push("/dashboard/files");
-    }, 800);
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ أثناء حفظ الملف.");
+      setLoading(false);
+    }
   };
 
   const countriesList = [
-    "فرنسا",
-    "ألمانيا",
-    "بلجيكا",
-    "إيطاليا",
-    "هولندا",
-    "النمسا",
-    "إسبانيا",
-    "الدنمارك",
     "المملكة المتحدة",
-    "الولايات المتحدة الأمريكية",
     "كندا",
-    "أستراليا",
-    "الإمارات العربية المتحدة",
-    "المملكة العربية السعودية"
+    "الولايات المتحدة",
+    "الدنمارك",
+    "أستراليا"
   ];
 
   return (
@@ -134,7 +137,7 @@ export default function SendNewClient() {
 
               {/* Phone */}
               <div className="space-y-1.5 text-right">
-                <label className="text-[11px] font-bold text-slate-700 block">رقم الهاتف <span className="text-red-500">*</span></label>
+                <label className="text-[11px] font-bold text-slate-700 block">رقم الهاتف (الواتساب) <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <input
                     type="tel"
@@ -160,6 +163,91 @@ export default function SendNewClient() {
                     className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#0a2540] focus:ring-1 focus:ring-[#0a2540] text-right text-xs transition-all text-slate-800 placeholder:text-slate-400"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* City */}
+              <div className="space-y-1.5 text-right">
+                <label className="text-[11px] font-bold text-slate-700 block">المدينة <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="أدخل مدينة الإقامة"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#0a2540] focus:ring-1 focus:ring-[#0a2540] text-right text-xs transition-all text-slate-800 placeholder:text-slate-400"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Job */}
+              <div className="space-y-1.5 text-right">
+                <label className="text-[11px] font-bold text-slate-700 block">طبيعة العمل الحالي <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <select
+                    value={job}
+                    onChange={(e) => setJob(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#0a2540] focus:ring-1 focus:ring-[#0a2540] text-right text-xs transition-all appearance-none cursor-pointer text-slate-800 text-ellipsis overflow-hidden"
+                    required
+                  >
+                    <option value="موظف قطاع خاص (Salarié du secteur privé)">موظف قطاع خاص (Salarié du secteur privé)</option>
+                    <option value="موظف قطاع عام (Fonctionnaire)">موظف قطاع عام (Fonctionnaire)</option>
+                    <option value="تاجر / صاحب عمل (Commerçant / Gérant)">تاجر / صاحب عمل (Commerçant / Gérant)</option>
+                    <option value="طالب (Étudiant)">طالب (Étudiant)</option>
+                    <option value="متقاعد (Retraité)">متقاعد (Retraité)</option>
+                    <option value="مهنة حرة / مستقل (Profession libérale)">مهنة حرة / مستقل (Profession libérale)</option>
+                  </select>
+                  <FileText className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* CNSS */}
+              <div className="space-y-1.5 text-right">
+                <label className="text-[11px] font-bold text-slate-700 block">تغطية الضمان الاجتماعي (CNSS) <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <select
+                    value={cnss}
+                    onChange={(e) => setCnss(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#0a2540] focus:ring-1 focus:ring-[#0a2540] text-right text-xs transition-all appearance-none cursor-pointer text-slate-800"
+                    required
+                  >
+                    <option value="نعم">نعم</option>
+                    <option value="لا">لا</option>
+                  </select>
+                  <Info className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Previous Rejection */}
+              <div className="space-y-1.5 text-right">
+                <label className="text-[11px] font-bold text-slate-700 block">هل تم رفض تأشيرتك من قبل؟ <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <select
+                    value={prevRejection}
+                    onChange={(e) => setPrevRejection(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#0a2540] focus:ring-1 focus:ring-[#0a2540] text-right text-xs transition-all appearance-none cursor-pointer text-slate-800"
+                    required
+                  >
+                    <option value="نعم">نعم</option>
+                    <option value="لا">لا</option>
+                  </select>
+                  <Info className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -203,7 +291,7 @@ export default function SendNewClient() {
               </div>
 
               {/* Passport Type */}
-              <div className="space-y-1.5 text-right">
+              <div className="space-y-1.5 text-right font-sans">
                 <label className="text-[11px] font-bold text-slate-700 block">نوع جواز السفر</label>
                 <div className="relative">
                   <select

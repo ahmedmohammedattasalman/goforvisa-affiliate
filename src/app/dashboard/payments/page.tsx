@@ -24,25 +24,48 @@ import {
   Globe,
   Plus,
   CheckCircle,
-  XCircle
+  XCircle,
+  RefreshCw
 } from "lucide-react";
 
 // Brand Logo Components for Wafacash and Cash Plus
-const WafacashLogo = ({ size = 20 }: { size?: number }) => (
+const WafacashLogo = ({ size = 24 }: { size?: number }) => (
   <div className="flex items-center justify-center shrink-0">
-    <svg width={size * 1.5} height={size} viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 4L14 12L6 20" stroke="#1E1E1E" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16 4L24 12L16 20" stroke="#FFCC00" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <clipPath id="wafacashCircle">
+        <circle cx="50" cy="50" r="50" />
+      </clipPath>
+      <g clipPath="url(#wafacashCircle)">
+        {/* Right yellow half */}
+        <rect x="50" y="0" width="50" height="100" fill="#FFF200" />
+        {/* Left grey half */}
+        <rect x="0" y="0" width="50" height="100" fill="#C2C8CD" />
+        {/* Black Chevron dividing them */}
+        <path d="M33.3 0L72.5 50L33.3 100H46.5L85.7 50L46.5 0H33.3Z" fill="#1A1718" />
+        {/* Black square in the left half */}
+        <rect x="26" y="44" width="12" height="12" fill="#1A1718" />
+      </g>
     </svg>
   </div>
 );
 
 const CashPlusLogo = ({ size = 28 }: { size?: number }) => (
   <div className="flex items-center justify-center shrink-0">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="14" fill="#0E4A8A" />
-      <rect x="5.5" y="11" width="21" height="10" rx="5" fill="#39B54A" />
-      <text x="16" y="18.5" fill="#FFFFFF" fontSize="7" fontWeight="bold" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">Plus</text>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <clipPath id="cashplusCircle">
+        <circle cx="50" cy="50" r="48" />
+      </clipPath>
+      <circle cx="50" cy="50" r="48" fill="#00979C" stroke="#FFFFFF" strokeWidth="2" />
+      <g clipPath="url(#cashplusCircle)">
+        {/* Orange/yellow gradient curve at the bottom */}
+        <path d="M0 65C12 85 32 96 56 96C75 96 90 85 96 65C82 78 62 84 42 82C22 80 10 72 0 65Z" fill="#F9A01B" />
+        
+        {/* White loop and arrow */}
+        <path d="M18 56C17 40 28 29 42 27C48 26 55 28 59 30L55 33L71 34L67 18L63 22C57 19 49 17 40 18C22 20 8 35 9 53C10 71 23 79 39 80" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" fill="none" />
+        
+        {/* White loop on the right */}
+        <path d="M52 81C60 80 64 76 67 70C72 58 83 49 91 49C96 49 97 54 93 60C88 68 79 76 71 79C65 81 58 82 52 81Z" fill="#FFFFFF" />
+      </g>
     </svg>
   </div>
 );
@@ -141,23 +164,28 @@ export default function PaymentsPage() {
 
     setLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const detailsText = selectedMethod === "تحويل بنكي" 
         ? `${selectedMethod} - ${bank}` 
         : `${selectedMethod} (CIN: ${cin})`;
 
-      const res = requestWithdrawal(val, detailsText);
-      setLoading(false);
-      
-      if (res.success) {
-        setSuccess("تم إرسال طلب السحب بنجاح وهو قيد المراجعة.");
-        setAmount("500");
-        if (selectedMethod !== "تحويل بنكي") {
-          setCin("");
+      try {
+        const res = await requestWithdrawal(val, detailsText);
+        setLoading(false);
+        
+        if (res.success) {
+          setSuccess("تم إرسال طلب السحب بنجاح وهو قيد المراجعة.");
+          setAmount("500");
+          if (selectedMethod !== "تحويل بنكي") {
+            setCin("");
+          }
+          setTimeout(() => setSuccess(""), 3000);
+        } else {
+          setError(res.message);
         }
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(res.message);
+      } catch (err: any) {
+        setLoading(false);
+        setError("حدث خطأ أثناء معالجة الطلب.");
       }
     }, 800);
   };
@@ -463,8 +491,14 @@ export default function PaymentsPage() {
                       <label className="text-[10px] font-bold text-slate-400">البنك</label>
                       <div className="relative">
                         <select
-                          value={bank}
-                          onChange={(e) => setBank(e.target.value)}
+                          value={bank === "أخرى" || !["", "البنك الشعبي", "التجاري وفا بنك", "بنك إفريقيا", "CIH Bank"].includes(bank) ? "أخرى" : bank}
+                          onChange={(e) => {
+                            if (e.target.value === "أخرى") {
+                              setBank("أخرى");
+                            } else {
+                              setBank(e.target.value);
+                            }
+                          }}
                           className="w-full pl-8 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-600 focus:bg-white text-xs font-bold text-slate-700 text-right transition-colors appearance-none cursor-pointer"
                           required
                         >
@@ -473,10 +507,26 @@ export default function PaymentsPage() {
                           <option value="التجاري وفا بنك">التجاري وفا بنك</option>
                           <option value="بنك إفريقيا">بنك إفريقيا</option>
                           <option value="CIH Bank">CIH Bank</option>
+                          <option value="أخرى">أخرى</option>
                         </select>
                         <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-2.5 left-2.5 pointer-events-none" />
                       </div>
                     </div>
+
+                    {/* Custom Bank Name Input */}
+                    {(bank === "أخرى" || (bank !== "" && !["البنك الشعبي", "التجاري وفا بنك", "بنك إفريقيا", "CIH Bank"].includes(bank))) && (
+                      <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <label className="text-[10px] font-bold text-slate-400">اسم البنك الآخر</label>
+                        <input
+                          type="text"
+                          value={bank === "أخرى" ? "" : bank}
+                          onChange={(e) => setBank(e.target.value)}
+                          className="w-full pl-3 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-600 focus:bg-white text-xs font-bold text-slate-800 text-right transition-colors"
+                          placeholder="أدخل اسم البنك الخاص بك"
+                          required
+                        />
+                      </div>
+                    )}
 
                   </div>
                 ) : (
@@ -625,13 +675,15 @@ export default function PaymentsPage() {
               {displayedWithdrawals.map((tx) => {
                 const isPaid = tx.status === "تم التحويل" || tx.status === "تم الدفع";
                 const isPending = tx.status === "قيد المراجعة";
+                const isProcessing = tx.status === "قيد المعالجة";
                 const isRejected = tx.status === "مرفوض";
 
                 let noteText = tx.notes || "";
-                if (!noteText) {
+                if (!noteText || noteText === "جاري مراجعة الطلب") {
                   if (isPaid) noteText = "تم التحويل بنجاح";
+                  else if (isProcessing) noteText = "جاري معالجة تحويل المبلغ";
                   else if (isPending) noteText = "جاري مراجعة الطلب";
-                  else noteText = "بيانات الحساب غير صحيحة";
+                  else noteText = "تم رفض الطلب";
                 }
 
                 return (
@@ -682,13 +734,17 @@ export default function PaymentsPage() {
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold border ${
                           isPaid 
                             ? "bg-green-50 text-green-600 border-green-100" 
+                            : isProcessing
+                            ? "bg-blue-50 text-blue-600 border-blue-100"
                             : isPending
                             ? "bg-amber-50 text-amber-600 border-amber-100"
                             : "bg-red-50 text-red-600 border-red-100"
                         }`}>
-                          <span>{isPaid ? "تم الدفع" : isPending ? "قيد المراجعة" : "مرفوض"}</span>
+                          <span>{isPaid ? "تم الدفع" : isProcessing ? "قيد المعالجة" : isPending ? "قيد المراجعة" : "مرفوض"}</span>
                           {isPaid ? (
                             <Check className="w-3 h-3 stroke-[3] rounded-full border border-green-500 p-0.5 bg-green-500 text-white" />
+                          ) : isProcessing ? (
+                            <RefreshCw className="w-3 h-3 text-blue-500 animate-spin" style={{ animationDuration: '3s' }} />
                           ) : isPending ? (
                             <Clock className="w-3 h-3 text-amber-500" />
                           ) : (
@@ -702,10 +758,10 @@ export default function PaymentsPage() {
                     <td className="py-3.5 px-4 text-right pr-6 whitespace-nowrap font-extrabold">
                       <div className="flex items-center gap-2 justify-start">
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                          isPaid ? "bg-green-500" : isPending ? "bg-amber-500" : "bg-red-500"
+                          isPaid ? "bg-green-500" : isProcessing ? "bg-blue-500" : isPending ? "bg-amber-500" : "bg-red-500"
                         }`} />
                         <span className={
-                          isPaid ? "text-green-600" : isPending ? "text-amber-600" : "text-red-600"
+                          isPaid ? "text-green-600" : isProcessing ? "text-blue-600" : isPending ? "text-amber-600" : "text-red-600"
                         }>
                           {noteText}
                         </span>

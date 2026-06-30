@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase";
 import { 
   Bell, 
   Settings, 
@@ -16,6 +17,59 @@ import {
   Trash2
 } from "lucide-react";
 
+function getNotifDetails(text: string, dbType: string) {
+  let title = "تنبيه النظام";
+  let icon = <Bell className="w-4 h-4 text-blue-600" />;
+  let bgClass = "bg-blue-50 border-blue-100";
+
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes("شريك") || lowerText.includes("partner") || lowerText.includes("التسجيل")) {
+    title = "تسجيل شريك جديد";
+    icon = <Handshake className="w-4 h-4 text-emerald-600" />;
+    bgClass = "bg-emerald-50 border-emerald-100";
+  } else if (lowerText.includes("سحب") || lowerText.includes("payout") || lowerText.includes("withdrawal") || lowerText.includes("السحب")) {
+    title = "طلب سحب جديد";
+    icon = <CreditCard className="w-4 h-4 text-blue-600" />;
+    bgClass = "bg-blue-50 border-blue-100";
+  } else if (lowerText.includes("ملف") || lowerText.includes("file") || lowerText.includes("حالة")) {
+    title = "تحديث حالة ملف";
+    icon = <Folder className="w-4 h-4 text-purple-600" />;
+    bgClass = "bg-purple-50 border-purple-100";
+  } else if (lowerText.includes("عميل") || lowerText.includes("client")) {
+    title = "تسجيل عميل جديد";
+    icon = <Users className="w-4 h-4 text-blue-600" />;
+    bgClass = "bg-blue-50 border-blue-100";
+  } else if (lowerText.includes("عمولة") || lowerText.includes("أرباح") || lowerText.includes("commission")) {
+    title = "دفع عمولة";
+    icon = <DollarSign className="w-4 h-4 text-amber-600" />;
+    bgClass = "bg-amber-50 border-amber-100";
+  } else if (dbType === "warning") {
+    title = "تنبيه معلق";
+    icon = <AlertCircle className="w-4 h-4 text-rose-600" />;
+    bgClass = "bg-rose-50 border-rose-100";
+  } else if (dbType === "success") {
+    title = "إنجاز عملية";
+    icon = <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
+    bgClass = "bg-emerald-50 border-emerald-100";
+  }
+
+  return { title, icon, bgClass };
+}
+
+function formatTimeAgo(dateString: string) {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return "الآن";
+  if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+  if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+  return `منذ ${diffDays} يوم`;
+}
+
 export default function AdminNotifications() {
   const [toggles, setToggles] = useState({
     files: true,
@@ -26,106 +80,119 @@ export default function AdminNotifications() {
     reports: true
   });
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "تسجيل شريك جديد",
-      desc: "قام شريك جديد بالتسجيل في المنصة: Travel Anamer",
-      time: "منذ 5 دقائق",
-      type: "partner",
-      unread: true,
-      icon: <Handshake className="w-4 h-4 text-emerald-600" />,
-      bgClass: "bg-emerald-50 border-emerald-100"
-    },
-    {
-      id: 2,
-      title: "طلب سحب جديد",
-      desc: "طلب سحب جديد بقيمة 4,500.00 DH من الشريك Go Mosafer",
-      time: "منذ 15 دقيقة",
-      type: "withdrawal",
-      unread: true,
-      icon: <CreditCard className="w-4 h-4 text-blue-600" />,
-      bgClass: "bg-blue-50 border-blue-100"
-    },
-    {
-      id: 3,
-      title: "تحديث حالة ملف",
-      desc: "تم تحديث حالة الملف #2024-085 إلى مكتمل بواسطة النظام",
-      time: "منذ 1 ساعة",
-      type: "file",
-      unread: true,
-      icon: <Folder className="w-4 h-4 text-purple-600" />,
-      bgClass: "bg-purple-50 border-purple-100"
-    },
-    {
-      id: 4,
-      title: "تسجيل عميل جديد",
-      desc: "عميل جديد تم تسجيله بواسطة الشريك Eagle Tourism",
-      time: "منذ 2 ساعتين",
-      type: "client",
-      unread: true,
-      icon: <Users className="w-4 h-4 text-blue-600" />,
-      bgClass: "bg-blue-50 border-blue-100"
-    },
-    {
-      id: 5,
-      title: "دفع عمولة",
-      desc: "تم دفع عمولة الشريك Nile Travel بقيمة 2,800.00 DH بنجاح",
-      time: "منذ 5 ساعات",
-      type: "earnings",
-      unread: false,
-      icon: <DollarSign className="w-4 h-4 text-amber-600" />,
-      bgClass: "bg-amber-50 border-amber-100"
-    },
-    {
-      id: 6,
-      title: "تنبيه طلب سحب معلق",
-      desc: "طلب سحب للشريك Atlas Travel قيد الانتظار لأكثر من 48 ساعة",
-      time: "منذ يوم واحد",
-      type: "alert",
-      unread: false,
-      icon: <AlertCircle className="w-4 h-4 text-rose-600" />,
-      bgClass: "bg-rose-50 border-rose-100"
-    },
-    {
-      id: 7,
-      title: "تحديث إعدادات النظام",
-      desc: "تم تحديث إعدادات الأمان ونظام العمولات بواسطة المدير العام أحمد الإدريسي",
-      time: "منذ يومين",
-      type: "settings",
-      unread: false,
-      icon: <Settings className="w-4 h-4 text-slate-600" />,
-      bgClass: "bg-slate-50 border-slate-100"
-    },
-    {
-      id: 8,
-      title: "تصدير تقرير شهري",
-      desc: "تم إصدار التقرير الشهري للأداء بنجاح وجاهز للتحميل",
-      time: "منذ 3 أيام",
-      type: "report",
-      unread: false,
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />,
-      bgClass: "bg-emerald-50 border-emerald-100"
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function loadNotificationsData() {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*, partners(name, company)")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching notifications:", error.message);
+        return;
+      }
+
+      if (data) {
+        const mapped = data.map((notif: any) => {
+          const partnerName = notif.partners?.company || notif.partners?.name || "شريك عام";
+          const details = getNotifDetails(notif.text, notif.type);
+          
+          return {
+            id: notif.id,
+            title: details.title,
+            desc: notif.text + ` (${partnerName})`,
+            time: formatTimeAgo(notif.created_at),
+            type: notif.type,
+            unread: !notif.read,
+            icon: details.icon,
+            bgClass: details.bgClass
+          };
+        });
+        setNotifications(mapped);
+      }
+    } catch (err) {
+      console.error("Error in loadNotificationsData:", err);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }
 
-  const handleMarkAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, unread: false } : n))
+  useEffect(() => {
+    loadNotificationsData();
+
+    // Subscribe to realtime database changes for notifications
+    const channel = supabase
+      .channel("admin_notifications_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+        console.log("Realtime change detected in notifications table.");
+        loadNotificationsData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", id);
+      if (error) console.error(error.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", id);
+      if (error) console.error(error.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("read", false);
+      if (error) console.error(error.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClearAll = async () => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000");
+      if (error) console.error(error.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 font-sans" dir="rtl">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل الإشعارات...</p>
+      </div>
     );
-  };
-
-  const handleDelete = (id: number) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
-  };
-
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, unread: false })));
-  };
-
-  const handleClearAll = () => {
-    setNotifications([]);
-  };
+  }
 
   return (
     <div className="space-y-6 pb-12">

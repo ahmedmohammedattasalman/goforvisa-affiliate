@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/utils/supabase";
 import { 
   Home, 
   Users, 
@@ -22,7 +23,8 @@ import {
   MessageSquare,
   ChevronDown,
   Mail,
-  Globe
+  Globe,
+  User
 } from "lucide-react";
 
 // GoForVisa stylized real logo (Globe + plane swoosh)
@@ -60,25 +62,127 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [adminUser, setAdminUser] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("employee");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  const searchVal = searchParams.get("search") || "";
+
+
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const val = e.target.value;
+    if (val) {
+      params.set("search", val);
+    } else {
+      params.delete("search");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const isAdminLogin = pathname === "/admin/login";
 
   useEffect(() => {
-    // Check if running on client
-    if (typeof window !== "undefined") {
-      const user = localStorage.getItem("adminUser");
-      if (!user && !isAdminLogin) {
-        router.push("/admin/login");
-      } else {
-        if (user) setAdminUser(JSON.parse(user));
+    async function checkAdminAuth() {
+      if (isAdminLogin) {
         setAuthChecked(true);
+        return;
       }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) {
+        localStorage.removeItem("adminUser");
+        router.push("/admin/login");
+        return;
+      }
+
+      const email = session.user.email || "";
+      const userRoleMeta = session.user.app_metadata?.role;
+      const isUserAdmin = email.endsWith("@goforvisa.ma") || 
+                          userRoleMeta === "admin" || 
+                          userRoleMeta === "super_admin" || 
+                          userRoleMeta === "employee";
+      if (!isUserAdmin) {
+        await supabase.auth.signOut();
+        localStorage.removeItem("adminUser");
+        router.push("/admin/login");
+        return;
+      }
+
+      // Query the user's role from admin_users
+      const { data: adminUserRec, error: queryErr } = await supabase
+        .from("admin_users")
+        .select("role, name")
+        .eq("email", email)
+        .single();
+
+      if (queryErr) {
+        console.error("Error querying admin_users:", queryErr);
+      }
+
+      let role = adminUserRec?.role;
+      if (!role) {
+        if (email.toLowerCase() === "admin@goforvisa.ma") {
+          role = "super_admin";
+        } else if (email.toLowerCase() === "employee@goforvisa.ma") {
+          role = "employee";
+        } else {
+          role = "employee"; // default fallback
+        }
+      }
+      setUserRole(role);
+
+      const adminName = adminUserRec?.name || session.user.user_metadata?.name || "المسؤول";
+      setAdminUser(adminName);
+
+      // If the role is employee and trying to access unauthorized pages, redirect to files
+      if (role === "employee" && pathname !== "/admin/files" && pathname !== "/admin/profile") {
+        router.push("/admin/files");
+        return;
+      }
+
+      setAuthChecked(true);
     }
+
+    checkAdminAuth();
   }, [pathname, router, isAdminLogin]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("read", false);
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    } catch (err) {
+      console.error("Error fetching unread notification count:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!authChecked || isAdminLogin) return;
+
+    fetchUnreadCount();
+
+    // Subscribe to realtime database changes for notifications
+    const channel = supabase
+      .channel("admin_layout_notifications_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authChecked, isAdminLogin]);
 
   if (isAdminLogin) {
     return <div className="min-h-screen bg-[#F4F6F9]">{children}</div>;
@@ -95,7 +199,7 @@ export default function AdminLayout({
     );
   }
 
-  const navLinks = [
+  const allNavLinks = [
     { name: "الرئيسية", href: "/admin", icon: Home },
     { name: "الشركاء", href: "/admin/partners", icon: Users },
     { name: "الملفات", href: "/admin/files", icon: Files },
@@ -103,11 +207,20 @@ export default function AdminLayout({
     { name: "العمولات والأرباح", href: "/admin/commissions", icon: DollarSign },
     { name: "طلبات السحب", href: "/admin/withdrawals", icon: CreditCard },
     { name: "التقارير والإحصائيات", href: "/admin/reports", icon: BarChart3 },
-    { name: "الإشعارات", href: "/admin/notifications", icon: Bell, badge: 8 },
+    { name: "الإشعارات", href: "/admin/notifications", icon: Bell, badge: unreadCount },
     { name: "إدارة المستخدمين", href: "/admin/users", icon: UserCheck },
+    { name: "الملف الشخصي", href: "/admin/profile", icon: User },
   ];
 
-  const handleLogout = () => {
+  const navLinks = allNavLinks.filter(link => {
+    if (userRole === "employee") {
+      return link.href === "/admin/files" || link.href === "/admin/profile";
+    }
+    return true;
+  });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("adminUser");
     router.push("/admin/login");
   };
@@ -148,7 +261,7 @@ export default function AdminLayout({
                   <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-[#00A8FF] transition-colors"}`} />
                   <span>{link.name}</span>
                 </div>
-                {link.badge && (
+                {link.badge !== undefined && link.badge > 0 && (
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     isActive ? "bg-white text-[#0054A6]" : "bg-red-500 text-white"
                   }`}>
@@ -208,7 +321,7 @@ export default function AdminLayout({
                   {adminUser || "أحمد الإدريسي"}
                 </span>
                 <span className="text-[9px] text-slate-400 font-bold block mt-0.5">
-                  المدير العام
+                  {userRole === "super_admin" ? "المدير العام" : userRole === "admin" ? "مدير العمليات" : "مسؤول الملفات"}
                 </span>
               </div>
               <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -220,7 +333,7 @@ export default function AdminLayout({
             </button>
             {profileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-30 text-right">
-                <Link href="#" onClick={(e) => { e.preventDefault(); setProfileDropdownOpen(false); }} className="block text-right px-4 py-2 text-xs font-semibold hover:bg-slate-50 text-slate-700">الملف الشخصي</Link>
+                <Link href="/admin/profile" onClick={() => setProfileDropdownOpen(false)} className="block text-right px-4 py-2 text-xs font-semibold hover:bg-slate-50 text-slate-700">الملف الشخصي</Link>
                 <div className="h-px bg-slate-100 my-1"></div>
                 <button onClick={() => { setProfileDropdownOpen(false); handleLogout(); }} className="w-full text-right px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50">تسجيل الخروج</button>
               </div>
@@ -231,6 +344,8 @@ export default function AdminLayout({
           <div className="hidden lg:flex items-center relative w-96">
             <input
               type="text"
+              value={searchVal}
+              onChange={handleSearchChange}
               placeholder="بحث عن شريك، عميل، ملف..."
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl text-right text-xs focus:bg-white focus:border-[#0054A6] focus:ring-1 focus:ring-[#0054A6] transition-all text-slate-700 placeholder:text-slate-400 font-medium"
             />
@@ -255,9 +370,11 @@ export default function AdminLayout({
               className="relative p-2 text-slate-500 hover:text-[#0054A6] hover:bg-slate-50 rounded-full transition-colors border border-slate-100"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white font-extrabold text-[9px] rounded-full flex items-center justify-center border border-white">
-                8
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white font-extrabold text-[9px] rounded-full flex items-center justify-center border border-white">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
           </div>
 
@@ -324,7 +441,7 @@ export default function AdminLayout({
                       <Icon className="w-5 h-5 shrink-0" />
                       <span>{link.name}</span>
                     </div>
-                    {link.badge && (
+                    {link.badge !== undefined && link.badge > 0 && (
                       <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">
                         {link.badge}
                       </span>

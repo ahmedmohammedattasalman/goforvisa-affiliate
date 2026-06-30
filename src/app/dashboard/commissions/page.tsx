@@ -27,62 +27,131 @@ import {
 } from "lucide-react";
 
 // Custom country flag SVG components for crisp cross-platform rendering (including Windows!)
-const FranceFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="1" height="2" fill="#002395" />
-    <rect x="1" width="1" height="2" fill="#FFFFFF" />
-    <rect x="2" width="1" height="2" fill="#ED2939" />
+const UkFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 50 30">
+    <rect width="50" height="30" fill="#012169" />
+    <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#FFFFFF" strokeWidth="6" />
+    <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#C8102E" strokeWidth="4" />
+    <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#FFFFFF" strokeWidth="10" />
+    <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#C8102E" strokeWidth="6" />
   </svg>
 );
 
-const SpainFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#C60B1E" />
-    <rect y="0.5" width="3" height="1" fill="#FBE122" />
+const CanadaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 240 120">
+    <rect width="60" height="120" fill="#D80027" />
+    <rect x="60" width="120" height="120" fill="#FFFFFF" />
+    <rect x="180" width="60" height="120" fill="#D80027" />
+    <path d="M 120,32 L 123,43 L 131,39 L 128,48 L 137,49 L 128,55 L 132,66 L 123,61 L 122,85 L 118,85 L 117,61 L 108,66 L 112,55 L 103,49 L 112,48 L 109,39 L 117,43 Z" fill="#D80027" />
   </svg>
 );
 
-const ItalyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="1" height="2" fill="#009246" />
-    <rect x="1" width="1" height="2" fill="#F1F2F1" />
-    <rect x="2" width="1" height="2" fill="#CE2B37" />
+const UsaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 76 40">
+    <rect width="76" height="40" fill="#FFFFFF" />
+    <rect width="76" height="3.08" fill="#B22234" />
+    <rect y="6.15" width="76" height="3.08" fill="#B22234" />
+    <rect y="12.31" width="76" height="3.08" fill="#B22234" />
+    <rect y="18.46" width="76" height="3.08" fill="#B22234" />
+    <rect y="24.62" width="76" height="3.08" fill="#B22234" />
+    <rect y="30.77" width="76" height="3.08" fill="#B22234" />
+    <rect y="36.92" width="76" height="3.08" fill="#B22234" />
+    <rect width="30.4" height="21.54" fill="#3C3B6E" />
+    <circle cx="5" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="10" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="15" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="20" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="25" cy="4" r="1" fill="#FFFFFF" />
+    <circle cx="7.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="12.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="17.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="22.5" cy="8" r="1" fill="#FFFFFF" />
+    <circle cx="5" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="10" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="15" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="20" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="25" cy="12" r="1" fill="#FFFFFF" />
+    <circle cx="7.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="12.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="17.5" cy="16" r="1" fill="#FFFFFF" />
+    <circle cx="22.5" cy="16" r="1" fill="#FFFFFF" />
   </svg>
 );
 
-const TurkeyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#E30A17" />
-    <circle cx="1.1" cy="1" r="0.4" fill="#FFFFFF" />
-    <circle cx="1.2" cy="1" r="0.32" fill="#E30A17" />
-    <polygon points="1.6,1 1.45,1.07 1.48,0.9 1.35,0.8 1.52,0.8" fill="#FFFFFF" />
+const DenmarkFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 37 28">
+    <rect width="37" height="28" fill="#C8102E" />
+    <rect x="12" width="4" height="28" fill="#FFFFFF" />
+    <rect y="12" width="37" height="4" fill="#FFFFFF" />
   </svg>
 );
 
-const GermanyFlag = () => (
-  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 3 2">
-    <rect width="3" height="2" fill="#FFCF00" />
-    <rect width="3" height="1.33" fill="#DD0000" />
-    <rect width="3" height="0.67" fill="#000000" />
+const AustraliaFlag = () => (
+  <svg className="w-5 h-3.5 rounded-sm shadow-xs border border-slate-200/60 inline-block align-middle" viewBox="0 0 80 40">
+    <rect width="80" height="40" fill="#012169" />
+    <g transform="scale(0.8)">
+      <rect width="50" height="25" fill="#012169" />
+      <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#FFFFFF" strokeWidth="5" />
+      <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#C8102E" strokeWidth="3" />
+      <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#FFFFFF" strokeWidth="8" />
+      <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#C8102E" strokeWidth="5" />
+    </g>
+    <polygon points="20,26 21,30 25,30 22,33 23,37 20,35 17,37 18,33 15,30 19,30" fill="#FFFFFF" />
+    <circle cx="60" cy="8" r="1.5" fill="#FFFFFF" />
+    <circle cx="70" cy="16" r="1.5" fill="#FFFFFF" />
+    <circle cx="60" cy="24" r="1.5" fill="#FFFFFF" />
+    <circle cx="50" cy="18" r="1.5" fill="#FFFFFF" />
+    <circle cx="65" cy="30" r="1" fill="#FFFFFF" />
   </svg>
 );
+
+const getCountryFlag = (countryName: string) => {
+  if (countryName.includes("المملكة المتحدة") || countryName.includes("بريطانيا") || countryName.includes("UK") || countryName.includes("Uk")) return <UkFlag />;
+  if (countryName.includes("كندا")) return <CanadaFlag />;
+  if (countryName.includes("الولايات المتحدة") || countryName.includes("أمريكا") || countryName.includes("USA") || countryName.includes("Usa")) return <UsaFlag />;
+  if (countryName.includes("الدنمارك")) return <DenmarkFlag />;
+  if (countryName.includes("أستراليا")) return <AustraliaFlag />;
+  return <UsaFlag />;
+};
 
 // Brand Logo Components
-const WafacashLogo = ({ size = 20 }: { size?: number }) => (
+const WafacashLogo = ({ size = 24 }: { size?: number }) => (
   <div className="flex items-center justify-center shrink-0">
-    <svg width={size * 1.5} height={size} viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 4L14 12L6 20" stroke="#1E1E1E" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16 4L24 12L16 20" stroke="#FFCC00" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <clipPath id="wafacashCircleComm">
+        <circle cx="50" cy="50" r="50" />
+      </clipPath>
+      <g clipPath="url(#wafacashCircleComm)">
+        {/* Right yellow half */}
+        <rect x="50" y="0" width="50" height="100" fill="#FFF200" />
+        {/* Left grey half */}
+        <rect x="0" y="0" width="50" height="100" fill="#C2C8CD" />
+        {/* Black Chevron dividing them */}
+        <path d="M33.3 0L72.5 50L33.3 100H46.5L85.7 50L46.5 0H33.3Z" fill="#1A1718" />
+        {/* Black square in the left half */}
+        <rect x="26" y="44" width="12" height="12" fill="#1A1718" />
+      </g>
     </svg>
   </div>
 );
 
 const CashPlusLogo = ({ size = 28 }: { size?: number }) => (
   <div className="flex items-center justify-center shrink-0">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="14" fill="#0E4A8A" />
-      <rect x="5.5" y="11" width="21" height="10" rx="5" fill="#39B54A" />
-      <text x="16" y="18.5" fill="#FFFFFF" fontSize="7" fontWeight="bold" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">Plus</text>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <clipPath id="cashplusCircleComm">
+        <circle cx="50" cy="50" r="48" />
+      </clipPath>
+      <circle cx="50" cy="50" r="48" fill="#00979C" stroke="#FFFFFF" strokeWidth="2" />
+      <g clipPath="url(#cashplusCircleComm)">
+        {/* Orange/yellow gradient curve at the bottom */}
+        <path d="M0 65C12 85 32 96 56 96C75 96 90 85 96 65C82 78 62 84 42 82C22 80 10 72 0 65Z" fill="#F9A01B" />
+        
+        {/* White loop and arrow */}
+        <path d="M18 56C17 40 28 29 42 27C48 26 55 28 59 30L55 33L71 34L67 18L63 22C57 19 49 17 40 18C22 20 8 35 9 53C10 71 23 79 39 80" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" fill="none" />
+        
+        {/* White loop on the right */}
+        <path d="M52 81C60 80 64 76 67 70C72 58 83 49 91 49C96 49 97 54 93 60C88 68 79 76 71 79C65 81 58 82 52 81Z" fill="#FFFFFF" />
+      </g>
     </svg>
   </div>
 );
@@ -92,8 +161,10 @@ export default function CommissionsPage() {
     partner,
     bankInfo,
     currentBalance, 
+    pendingCommissions,
     withdrawals, 
-    requestWithdrawal 
+    requestWithdrawal,
+    clients
   } = useApp();
 
   // Form State for Withdrawal Request
@@ -114,6 +185,7 @@ export default function CommissionsPage() {
   const [statusFilterOpen, setStatusFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("الكل");
   const [lineFilterOpen, setLineFilterOpen] = useState(false);
+  const [showAllCommissions, setShowAllCommissions] = useState(false);
 
   // Pre-populate fields from context
   useEffect(() => {
@@ -127,18 +199,137 @@ export default function CommissionsPage() {
     }
   }, [partner, bankInfo]);
 
-  // Financial calculations adjusted to baseline mockup values dynamically
-  const pendingBalance = withdrawals
+  // Financial calculations from database values
+  const pendingWithdrawalSum = withdrawals
     .filter(w => w.status === "قيد المراجعة")
     .reduce((sum, w) => sum + w.amount, 0);
 
-  // Base paid is 7500 in mockup, dynamic updates will offset this
-  const paidBalance = 7500 + (withdrawals
+  const pendingBalance = pendingWithdrawalSum + pendingCommissions;
+
+  const paidBalance = withdrawals
     .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
-    .reduce((sum, w) => sum + w.amount, 0) - 5000);
+    .reduce((sum, w) => sum + w.amount, 0);
 
   const availableBalance = currentBalance;
   const totalProfits = availableBalance + pendingBalance + paidBalance;
+
+  // Dynamic RLS & Postgres optimized helper variables
+  const totalCompletedFiles = clients.filter(c => c.status === "تم الإنجاز").length;
+
+  const paidSum = paidBalance;
+  const pendingSum = pendingBalance;
+  const availableSum = availableBalance;
+  const cancelledSum = clients
+    .filter(c => c.status === "ملغى")
+    .reduce((sum, c) => sum + c.commission, 0);
+
+  const totalSum = paidSum + pendingSum + availableSum + cancelledSum;
+  const totalSumDivisor = totalSum || 1;
+
+  const pctPaid = ((paidSum / totalSumDivisor) * 100).toFixed(1);
+  const pctPending = ((pendingSum / totalSumDivisor) * 100).toFixed(1);
+  const pctAvailable = ((availableSum / totalSumDivisor) * 100).toFixed(1);
+  const pctCancelled = ((cancelledSum / totalSumDivisor) * 100).toFixed(1);
+
+  const lenPaid = (paidSum / totalSumDivisor) * 219.9;
+  const lenPending = (pendingSum / totalSumDivisor) * 219.9;
+  const lenAvailable = (availableSum / totalSumDivisor) * 219.9;
+  const lenCancelled = (cancelledSum / totalSumDivisor) * 219.9;
+
+  const offsetPaid = 0;
+  const offsetPending = -lenPaid;
+  const offsetAvailable = -(lenPaid + lenPending);
+  const offsetCancelled = -(lenPaid + lenPending + lenAvailable);
+
+  // Line Chart monthly data
+  const getMonthlyCommission = (monthsAgo: number) => {
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() - monthsAgo);
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth();
+
+    return clients
+      .filter(c => {
+        if (c.status === "ملغى") return false;
+        const d = new Date(c.date);
+        return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
+      })
+      .reduce((sum, c) => sum + c.commission, 0);
+  };
+
+  const last6MonthsData = [
+    getMonthlyCommission(5),
+    getMonthlyCommission(4),
+    getMonthlyCommission(3),
+    getMonthlyCommission(2),
+    getMonthlyCommission(1),
+    getMonthlyCommission(0)
+  ];
+
+  const maxVal = Math.max(...last6MonthsData, 500);
+  const getY = (val: number) => 110 - (val / maxVal) * 90;
+
+  const y0 = getY(last6MonthsData[0]);
+  const y1 = getY(last6MonthsData[1]);
+  const y2 = getY(last6MonthsData[2]);
+  const y3 = getY(last6MonthsData[3]);
+  const y4 = getY(last6MonthsData[4]);
+  const y5 = getY(last6MonthsData[5]);
+
+  const pathD = `M 25 ${y0} L 75 ${y1} L 125 ${y2} L 175 ${y3} L 225 ${y4} L 275 ${y5}`;
+  const fillD = `${pathD} L 275 110 L 25 110 Z`;
+
+  const getMonthLabel = (monthsAgo: number) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - monthsAgo);
+    return d.toLocaleDateString("ar-EG", { month: "long" });
+  };
+
+  // Commission status mapping for client files
+  const completedClients = clients
+    .filter(c => c.status === "تم الإنجاز")
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  let currentPaidSum = 0;
+  let currentPendingSum = 0;
+
+  const commissionStatuses = new Map<string, "مدفوعة" | "قيد المراجعة" | "متاحة للسحب" | "ملغاة" | "قيد الانتظار">();
+
+  completedClients.forEach(client => {
+    const comm = client.commission || 500;
+    if (currentPaidSum + comm <= paidBalance) {
+      commissionStatuses.set(client.dbId, "مدفوعة");
+      currentPaidSum += comm;
+    } else if (currentPaidSum + currentPendingSum + comm <= paidBalance + pendingBalance) {
+      commissionStatuses.set(client.dbId, "قيد المراجعة");
+      currentPendingSum += comm;
+    } else {
+      commissionStatuses.set(client.dbId, "متاحة للسحب");
+    }
+  });
+
+  clients.forEach(client => {
+    if (client.status === "ملغى") {
+      commissionStatuses.set(client.dbId, "ملغاة");
+    } else if (client.status !== "تم الإنجاز") {
+      commissionStatuses.set(client.dbId, "قيد الانتظار");
+    }
+  });
+
+  const filteredStatementClients = clients.filter(c => {
+    const status = commissionStatuses.get(c.dbId);
+    if (statusFilter === "الكل") return true;
+    if (statusFilter === "مدفوعة") return status === "مدفوعة";
+    if (statusFilter === "متاحة") return status === "متاحة للسحب";
+    if (statusFilter === "مراجعة") return status === "قيد المراجعة";
+    return true;
+  });
+
+  const sortedStatementClients = [...filteredStatementClients].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const displayedCommissions = showAllCommissions 
+    ? sortedStatementClients 
+    : sortedStatementClients.slice(0, 5);
 
   const handleWithdrawSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,26 +375,31 @@ export default function CommissionsPage() {
 
     setLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const detailsText = selectedMethod === "تحويل بنكي" 
         ? `${selectedMethod} - ${bank}` 
         : `${selectedMethod} (CIN: ${cin})`;
 
-      const res = requestWithdrawal(val, detailsText);
-      setLoading(false);
-      
-      if (res.success) {
-        setSuccess("تم إرسال طلب السحب بنجاح وهو قيد المراجعة.");
-        setAmount("500");
-        if (selectedMethod !== "تحويل بنكي") {
-          setCin("");
+      try {
+        const res = await requestWithdrawal(val, detailsText);
+        setLoading(false);
+        
+        if (res.success) {
+          setSuccess("تم إرسال طلب السحب بنجاح وهو قيد المراجعة.");
+          setAmount("500");
+          if (selectedMethod !== "تحويل بنكي") {
+            setCin("");
+          }
+          setTimeout(() => {
+            setSuccess("");
+            setWithdrawModalOpen(false);
+          }, 1800);
+        } else {
+          setError(res.message);
         }
-        setTimeout(() => {
-          setSuccess("");
-          setWithdrawModalOpen(false);
-        }, 1800);
-      } else {
-        setError(res.message);
+      } catch (err: any) {
+        setLoading(false);
+        setError("حدث خطأ أثناء معالجة الطلب.");
       }
     }, 800);
   };
@@ -370,31 +566,31 @@ export default function CommissionsPage() {
               {/* Legend on right */}
               <div className="flex-1 space-y-2 text-right">
                 <div className="flex items-center justify-between text-[9px] font-bold">
-                  <span className="text-slate-400 font-medium">15 (71.4%)</span>
+                  <span className="text-slate-400 font-medium">{paidBalance.toLocaleString()} DH ({pctPaid}%)</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
                     <span className="text-slate-500">مدفوعة</span>
+                    <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[9px] font-bold">
-                  <span className="text-slate-400 font-medium">3 (14.3%)</span>
+                  <span className="text-slate-400 font-medium">{pendingBalance.toLocaleString()} DH ({pctPending}%)</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
                     <span className="text-slate-500">قيد المراجعة</span>
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[9px] font-bold">
-                  <span className="text-slate-400 font-medium">2 (9.5%)</span>
+                  <span className="text-slate-400 font-medium">{availableBalance.toLocaleString()} DH ({pctAvailable}%)</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
                     <span className="text-slate-500">متاحة للسحب</span>
+                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[9px] font-bold">
-                  <span className="text-slate-400 font-medium">1 (4.8%)</span>
+                  <span className="text-slate-400 font-medium">{cancelledSum.toLocaleString()} DH ({pctCancelled}%)</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                     <span className="text-slate-500">ملغاة</span>
+                    <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                   </div>
                 </div>
               </div>
@@ -403,12 +599,12 @@ export default function CommissionsPage() {
               <div className="w-32 h-32 flex items-center justify-center shrink-0 relative">
                 
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none mt-1">
-                  <span className="text-xl font-black text-slate-800 leading-none">21</span>
+                  <span className="text-xl font-black text-slate-800 leading-none">{totalCompletedFiles}</span>
                   <span className="text-[7px] text-slate-400 font-bold block mt-1">ملف مكتمل</span>
                 </div>
 
                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                  {/* Segment 1: Green (71.4%) */}
+                  {/* Segment 1: Green (مدفوعة) */}
                   <circle
                     cx="50"
                     cy="50"
@@ -416,10 +612,10 @@ export default function CommissionsPage() {
                     fill="transparent"
                     stroke="#10B981"
                     strokeWidth="11"
-                    strokeDasharray="157 219.9"
-                    strokeDashoffset="0"
+                    strokeDasharray={`${lenPaid} 219.9`}
+                    strokeDashoffset={offsetPaid}
                   />
-                  {/* Segment 2: Yellow (14.3%) */}
+                  {/* Segment 2: Yellow (قيد المراجعة) */}
                   <circle
                     cx="50"
                     cy="50"
@@ -427,10 +623,10 @@ export default function CommissionsPage() {
                     fill="transparent"
                     stroke="#F59E0B"
                     strokeWidth="11"
-                    strokeDasharray="31.4 219.9"
-                    strokeDashoffset="-157"
+                    strokeDasharray={`${lenPending} 219.9`}
+                    strokeDashoffset={offsetPending}
                   />
-                  {/* Segment 3: Blue (9.5%) */}
+                  {/* Segment 3: Blue (متاحة للسحب) */}
                   <circle
                     cx="50"
                     cy="50"
@@ -438,10 +634,10 @@ export default function CommissionsPage() {
                     fill="transparent"
                     stroke="#3B82F6"
                     strokeWidth="11"
-                    strokeDasharray="20.9 219.9"
-                    strokeDashoffset="-188.4"
+                    strokeDasharray={`${lenAvailable} 219.9`}
+                    strokeDashoffset={offsetAvailable}
                   />
-                  {/* Segment 4: Grey (4.8%) */}
+                  {/* Segment 4: Grey (ملغاة) */}
                   <circle
                     cx="50"
                     cy="50"
@@ -449,8 +645,8 @@ export default function CommissionsPage() {
                     fill="transparent"
                     stroke="#94A3B8"
                     strokeWidth="11"
-                    strokeDasharray="10.6 219.9"
-                    strokeDashoffset="-209.3"
+                    strokeDasharray={`${lenCancelled} 219.9`}
+                    strokeDashoffset={offsetCancelled}
                   />
                 </svg>
               </div>
@@ -499,35 +695,35 @@ export default function CommissionsPage() {
                 <line x1="0" y1="110" x2="280" y2="110" stroke="#F1F5F9" strokeWidth="1" />
 
                 {/* Vertical labels */}
-                <text x="25" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">ديسمبر</text>
-                <text x="75" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">نوفمبر</text>
-                <text x="125" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أكتوبر</text>
-                <text x="175" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">سبتمبر</text>
-                <text x="225" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أغسطس</text>
-                <text x="275" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يوليو</text>
+                <text x="25" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(5)}</text>
+                <text x="75" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(4)}</text>
+                <text x="125" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(3)}</text>
+                <text x="175" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(2)}</text>
+                <text x="225" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(1)}</text>
+                <text x="275" y="125" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{getMonthLabel(0)}</text>
 
                 {/* Left labels */}
                 <text x="295" y="113" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">0</text>
-                <text x="295" y="93" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">500</text>
-                <text x="295" y="73" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">1k</text>
-                <text x="295" y="53" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">1.5k</text>
-                <text x="295" y="33" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">2k</text>
-                <text x="295" y="13" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">2.5k</text>
-                <text x="295" y="3" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">3k</text>
+                <text x="295" y="93" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{Math.round(maxVal * 0.17)}</text>
+                <text x="295" y="73" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{Math.round(maxVal * 0.33)}</text>
+                <text x="295" y="53" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{Math.round(maxVal * 0.5)}</text>
+                <text x="295" y="33" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{Math.round(maxVal * 0.67)}</text>
+                <text x="295" y="13" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{Math.round(maxVal * 0.83)}</text>
+                <text x="295" y="3" textAnchor="end" className="text-[7px] fill-slate-350 font-bold">{maxVal}</text>
 
                 {/* Gradient area */}
-                <path d="M 25 105 Q 50 95, 75 90 T 125 90 T 175 65 T 225 50 T 275 30 L 275 110 L 25 110 Z" fill="url(#purple-grad-fill-2)" />
+                <path d={fillD} fill="url(#purple-grad-fill-2)" />
 
                 {/* Stroke curve */}
-                <path d="M 25 105 Q 50 95, 75 90 T 125 90 T 175 65 T 225 50 T 275 30" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" />
+                <path d={pathD} fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" />
 
                 {/* Dots */}
-                <circle cx="25" cy="105" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
-                <circle cx="75" cy="90" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
-                <circle cx="125" cy="90" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
-                <circle cx="175" cy="65" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
-                <circle cx="225" cy="50" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
-                <circle cx="275" cy="30" r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="25" cy={y0} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="75" cy={y1} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="125" cy={y2} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="175" cy={y3} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="225" cy={y4} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
+                <circle cx="275" cy={y5} r="3.5" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="1.5" />
               </svg>
             </div>
 
@@ -584,138 +780,61 @@ export default function CommissionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              
-              {/* Row 1 */}
-              <tr className="hover:bg-slate-50/40 transition-colors">
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">GFV-2024-000125</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">محمد علي</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>فرنسا</span>
-                    <FranceFlag />
-                  </div>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">20 مايو 2024</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800">
-                  <span dir="ltr">500.00 DH</span>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center">
-                  <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-green-50 text-green-600 border border-green-100">
-                      مدفوعة
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">21 مايو 2024 - 10:30</td>
-              </tr>
+              {displayedCommissions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 font-bold">
+                    لا توجد عمولات متوفرة حالياً.
+                  </td>
+                </tr>
+              ) : (
+                displayedCommissions.map((client) => {
+                  const commStatus = commissionStatuses.get(client.dbId);
+                  let badgeClass = "bg-slate-100 text-slate-500 border-slate-200";
+                  if (commStatus === "مدفوعة") badgeClass = "bg-green-50 text-green-600 border-green-100";
+                  else if (commStatus === "متاحة للسحب") badgeClass = "bg-blue-50 text-blue-600 border-blue-100";
+                  else if (commStatus === "قيد المراجعة") badgeClass = "bg-amber-50 text-amber-600 border-amber-100";
+                  else if (commStatus === "ملغاة") badgeClass = "bg-red-50 text-red-600 border-red-100";
 
-              {/* Row 2 */}
-              <tr className="hover:bg-slate-50/40 transition-colors">
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">GFV-2024-000124</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">فاطمة الزهراء</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>إسبانيا</span>
-                    <SpainFlag />
-                  </div>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">18 مايو 2024</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800">
-                  <span dir="ltr">500.00 DH</span>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center">
-                  <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-green-50 text-green-600 border border-green-100">
-                      مدفوعة
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">19 مايو 2024 - 09:15</td>
-              </tr>
-
-              {/* Row 3 */}
-              <tr className="hover:bg-slate-50/40 transition-colors">
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">GFV-2024-000123</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">أحمد رضا</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>إيطاليا</span>
-                    <ItalyFlag />
-                  </div>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">16 مايو 2024</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800">
-                  <span dir="ltr">500.00 DH</span>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center">
-                  <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 text-blue-600 border border-blue-100">
-                      متاحة للسحب
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">17 مايو 2024 - 14:45</td>
-              </tr>
-
-              {/* Row 4 */}
-              <tr className="hover:bg-slate-50/40 transition-colors">
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">GFV-2024-000122</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">سارة بنت عبد الله</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>تركيا</span>
-                    <TurkeyFlag />
-                  </div>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">14 مايو 2024</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800">
-                  <span dir="ltr">500.00 DH</span>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center">
-                  <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-50 text-amber-600 border border-amber-100">
-                      قيد المراجعة
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">11 مايو 2024 - 11:20</td>
-              </tr>
-
-              {/* Row 5 */}
-              <tr className="hover:bg-slate-50/40 transition-colors">
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">GFV-2024-000121</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">يوسف بلال</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>ألمانيا</span>
-                    <GermanyFlag />
-                  </div>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">10 مايو 2024</td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800">
-                  <span dir="ltr">500.00 DH</span>
-                </td>
-                <td className="border-l border-slate-200 py-3.5 px-4 text-center">
-                  <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-slate-100 text-slate-500 border border-slate-200">
-                      ملغاة
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">11 مايو 2024 - 16:10</td>
-              </tr>
-
+                  return (
+                    <tr key={client.id} className="hover:bg-slate-50/40 transition-colors">
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-800 text-[10px]">{client.id}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-right pr-6 font-semibold text-slate-700">{client.name}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-center font-bold text-slate-700">
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <span>{client.country}</span>
+                          {getCountryFlag(client.country)}
+                        </div>
+                      </td>
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-center text-slate-400 font-bold">{client.status === "تم الإنجاز" ? client.date : "-"}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-center font-black text-slate-800" dir="ltr">{(client.commission || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} DH</td>
+                      <td className="border-l border-slate-200 py-3.5 px-4 text-center">
+                        <div className="flex justify-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border ${badgeClass}`}>
+                            {commStatus || "قيد الانتظار"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-center text-slate-400 font-semibold">{client.date}</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
         {/* View more btn */}
-        <div className="pt-2 flex justify-center">
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold transition-all shadow-xs">
-            <span>عرض المزيد</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-        </div>
+        {sortedStatementClients.length > 5 && (
+          <div className="pt-2 flex justify-center">
+            <button 
+              onClick={() => setShowAllCommissions(!showAllCommissions)}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold transition-all shadow-xs"
+            >
+              <span>{showAllCommissions ? "عرض أقل" : "عرض المزيد"}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showAllCommissions ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+        )}
 
       </div>
 
@@ -876,8 +995,14 @@ export default function CommissionsPage() {
                       <label className="text-[10px] font-bold text-slate-400">البنك</label>
                       <div className="relative">
                         <select
-                          value={bank}
-                          onChange={(e) => setBank(e.target.value)}
+                          value={bank === "أخرى" || !["", "البنك الشعبي", "البنك الشعبي - الدار البيضاء", "التجاري وفا بنك", "بنك إفريقيا", "CIH Bank"].includes(bank) ? "أخرى" : bank}
+                          onChange={(e) => {
+                            if (e.target.value === "أخرى") {
+                              setBank("أخرى");
+                            } else {
+                              setBank(e.target.value);
+                            }
+                          }}
                           className="w-full pl-8 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-600 focus:bg-white text-xs font-bold text-slate-700 text-right transition-colors appearance-none cursor-pointer"
                           required
                         >
@@ -886,10 +1011,26 @@ export default function CommissionsPage() {
                           <option value="التجاري وفا بنك">التجاري وفا بنك</option>
                           <option value="بنك إفريقيا">بنك إفريقيا</option>
                           <option value="CIH Bank">CIH Bank</option>
+                          <option value="أخرى">أخرى</option>
                         </select>
                         <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-2.5 left-2.5 pointer-events-none" />
                       </div>
                     </div>
+
+                    {/* Custom Bank Name Input */}
+                    {(bank === "أخرى" || (bank !== "" && !["البنك الشعبي", "البنك الشعبي - الدار البيضاء", "التجاري وفا بنك", "بنك إفريقيا", "CIH Bank"].includes(bank))) && (
+                      <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <label className="text-[10px] font-bold text-slate-400">اسم البنك الآخر</label>
+                        <input
+                          type="text"
+                          value={bank === "أخرى" ? "" : bank}
+                          onChange={(e) => setBank(e.target.value)}
+                          className="w-full pl-3 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-600 focus:bg-white text-xs font-bold text-slate-800 text-right transition-colors"
+                          placeholder="أدخل اسم البنك الخاص بك"
+                          required
+                        />
+                      </div>
+                    )}
 
                   </div>
                 ) : (

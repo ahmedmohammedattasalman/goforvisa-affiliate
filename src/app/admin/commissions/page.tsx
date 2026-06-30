@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -20,7 +21,8 @@ import {
   Building2,
   Wallet,
   ArrowUp,
-  CreditCard
+  CreditCard,
+  X
 } from "lucide-react";
 
 export default function AdminCommissions() {
@@ -31,102 +33,223 @@ export default function AdminCommissions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("this-month");
 
-  // Mock data for financial transactions matching Screenshot 3
-  const transactionsData = [
-    {
-      code: "COM-2024-00125",
-      partner: "Eagle Tourism LLC",
-      partnerInitials: "ET",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000125",
-      dateDay: "15 مايو 2024",
-      dateTime: "14:30",
-      baseAmount: "25,000.00",
-      percentage: "10%",
-      commission: "2,500.00",
-      status: "مدفوعة",
-      statusColor: "bg-emerald-50 text-emerald-600 border-emerald-100"
-    },
-    {
-      code: "COM-2024-00124",
-      partner: "Nile Travel",
-      partnerInitials: "NT",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000124",
-      dateDay: "14 مايو 2024",
-      dateTime: "11:20",
-      baseAmount: "18,000.00",
-      percentage: "10%",
-      commission: "1,800.00",
-      status: "مستحقة",
-      statusColor: "bg-amber-50 text-amber-600 border-amber-100"
-    },
-    {
-      code: "COM-2024-00123",
-      partner: "رحلة العالم للسفر والسياحة",
-      partnerInitials: "رو",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000123",
-      dateDay: "14 مايو 2024",
-      dateTime: "10:15",
-      baseAmount: "15,000.00",
-      percentage: "8%",
-      commission: "1,200.00",
-      status: "مدفوعة",
-      statusColor: "bg-emerald-50 text-emerald-600 border-emerald-100"
-    },
-    {
-      code: "COM-2024-00122",
-      partner: "شركة النور للخدمات",
-      partnerInitials: "شن",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000122",
-      dateDay: "13 مايو 2024",
-      dateTime: "16:45",
-      baseAmount: "25,000.00",
-      percentage: "12%",
-      commission: "3,000.00",
-      status: "مدفوعة",
-      statusColor: "bg-emerald-50 text-emerald-600 border-emerald-100"
-    },
-    {
-      code: "COM-2024-00121",
-      partner: "Go Mosafer",
-      partnerInitials: "GM",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000121",
-      dateDay: "12 مايو 2024",
-      dateTime: "09:30",
-      baseAmount: "9,500.00",
-      percentage: "10%",
-      commission: "950.00",
-      status: "مستحقة",
-      statusColor: "bg-amber-50 text-amber-600 border-amber-100"
-    },
-    {
-      code: "COM-2024-00120",
-      partner: "Travel Anamer",
-      partnerInitials: "TA",
-      type: "عمولة طلب",
-      requestNum: "WD-2024-000120",
-      dateDay: "11 مايو 2024",
-      dateTime: "13:10",
-      baseAmount: "10,000.00",
-      percentage: "7.5%",
-      commission: "750.00",
-      status: "مدفوعة",
-      statusColor: "bg-emerald-50 text-emerald-600 border-emerald-100"
-    }
-  ];
+  const [transactionsData, setTransactionsData] = useState<any[]>([]);
+  const [topPartners, setTopPartners] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    thisMonthProfits: 0,
+    dueCommissions: 0,
+    paidCommissions: 0,
+    totalCommissions: 0
+  });
 
-  // Top partners matching list exactly
-  const topPartners = [
-    { name: "Eagle Tourism LLC", amount: "28,450.00 DH", files: 3, rank: 1, percent: "19% من الإجمالي" },
-    { name: "Nile Travel", amount: "22,780.00 DH", files: 3, rank: 2, percent: "15% من الإجمالي" },
-    { name: "رحلة العالم للسفر والسياحة", amount: "18,320.00 DH", files: 3, rank: 3, percent: "12% من الإجمالي" },
-    { name: "شركة النور للخدمات", amount: "15,950.00 DH", files: 4, rank: 4, percent: "11% من الإجمالي" },
-    { name: "Go Mosafer", amount: "11,250.00 DH", files: 5, rank: 5, percent: "7% من الإجمالي" }
-  ];
+  // Modal State
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formCommission, setFormCommission] = useState(0);
+  const [formStatus, setFormStatus] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // List of unique partners derived from transactions
+  const [uniquePartners, setUniquePartners] = useState<string[]>([]);
+
+  const handleSaveChanges = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTx) return;
+
+    try {
+      setActionLoading(true);
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          commission: formCommission,
+          status: formStatus
+        })
+        .eq("file_number", selectedTx.requestNum);
+
+      if (error) throw error;
+
+      setIsModalOpen(false);
+      setSelectedTx(null);
+      setIsEditing(false);
+      await loadCommissionsData();
+    } catch (err: any) {
+      alert(err.message || "حدث خطأ أثناء حفظ التغييرات.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  async function loadCommissionsData() {
+    try {
+      setLoading(true);
+
+      // 1. Fetch clients with partner details
+      const { data: dbClients, error: clientsErr } = await supabase
+        .from("clients")
+        .select("*, partners(name, company)")
+        .order("created_at", { ascending: false });
+
+      // 2. Fetch payouts
+      const { data: dbPayouts, error: payoutsErr } = await supabase
+        .from("payouts")
+        .select("*");
+
+      if (clientsErr || payoutsErr) {
+        console.error(clientsErr, payoutsErr);
+        return;
+      }
+
+      const clientsList = (dbClients || []).filter((c: any) => {
+        const partnerName = c.partners?.company || c.partners?.name || "شريك عام";
+        return partnerName !== "GoForVisa Admin";
+      });
+      const payoutsList = dbPayouts || [];
+
+      // Calculate KPI statistics (respecting 0 commission and not falling back to 500)
+      const totalCommissionsVal = clientsList
+        .filter(c => c.status !== "ملغى")
+        .reduce((sum, c) => sum + Number(c.commission !== null && c.commission !== undefined ? c.commission : 500), 0);
+
+      const paidCommissionsVal = payoutsList
+        .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
+        .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+      const pendingCommissionsVal = payoutsList
+        .filter(w => w.status === "قيد المراجعة")
+        .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+      const dueCommissionsVal = totalCommissionsVal - paidCommissionsVal - pendingCommissionsVal;
+
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const thisMonthProfitsVal = clientsList
+        .filter(c => {
+          if (c.status === "ملغى" || !c.created_at) return false;
+          const d = new Date(c.created_at);
+          return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        })
+        .reduce((sum, c) => sum + Number(c.commission !== null && c.commission !== undefined ? c.commission : 500), 0);
+
+      setStats({
+        thisMonthProfits: thisMonthProfitsVal,
+        dueCommissions: dueCommissionsVal,
+        paidCommissions: paidCommissionsVal,
+        totalCommissions: totalCommissionsVal
+      });
+
+      // Map Transactions
+      const txMapped = clientsList.map((c: any) => {
+        const partnerName = c.partners?.company || c.partners?.name || "شريك عام";
+        const initials = c.partners?.company 
+          ? c.partners.company.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+          : c.partners?.name ? c.partners.name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase() : "ش";
+
+        let status = "مستحقة";
+        let statusColor = "bg-amber-50 text-amber-600 border-amber-100";
+        if (c.status === "تم الإنجاز") {
+          status = "مدفوعة";
+          statusColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
+        } else if (c.status === "ملغى") {
+          status = "ملغى";
+          statusColor = "bg-rose-50 text-rose-600 border-rose-100";
+        }
+
+        const dateObj = new Date(c.created_at);
+        const dateDay = dateObj.toLocaleDateString("ar-EG", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+        const dateTime = dateObj.toLocaleTimeString("ar-EG", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+        const baseAmount = Number(c.total_fee !== null && c.total_fee !== undefined ? c.total_fee : 3000);
+        const commissionVal = Number(c.commission !== null && c.commission !== undefined ? c.commission : 500);
+        const percentage = baseAmount > 0 ? Math.round((commissionVal / baseAmount) * 100) + "%" : "0%";
+
+        return {
+          code: c.file_number ? c.file_number.replace("GFV", "COM") : "COM-NEW",
+          partner: partnerName,
+          partnerInitials: initials,
+          type: "عمولة طلب",
+          requestNum: c.file_number || "",
+          dateDay,
+          dateTime,
+          rawDate: c.created_at,
+          baseAmount: baseAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          percentage,
+          commission: commissionVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          commissionNum: commissionVal,
+          status,
+          statusColor
+        };
+      });
+
+      setTransactionsData(txMapped);
+
+      // Extract unique partners
+      const pNames = Array.from(new Set(txMapped.map(t => t.partner))).filter(Boolean);
+      setUniquePartners(pNames);
+
+      // Top partners mapping (respecting 0 commission and not falling back to 500)
+      const partnerCommissionsMap: Record<string, { amount: number; files: number; name: string }> = {};
+      clientsList.forEach((c: any) => {
+        if (c.status === "ملغى") return;
+        const partnerName = c.partners?.company || c.partners?.name || "شريك عام";
+        if (!partnerCommissionsMap[partnerName]) {
+          partnerCommissionsMap[partnerName] = { amount: 0, files: 0, name: partnerName };
+        }
+        partnerCommissionsMap[partnerName].amount += Number(c.commission !== null && c.commission !== undefined ? c.commission : 500);
+        partnerCommissionsMap[partnerName].files += 1;
+      });
+
+      const totalAllCommissions = Object.values(partnerCommissionsMap).reduce((sum, p) => sum + p.amount, 0) || 1;
+
+      const topP = Object.values(partnerCommissionsMap)
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5)
+        .map((p, idx) => {
+          const percent = Math.round((p.amount / totalAllCommissions) * 100) + "% من الإجمالي";
+          return {
+            name: p.name,
+            amount: `${p.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH`,
+            files: p.files,
+            rank: idx + 1,
+            percent
+          };
+        });
+
+      setTopPartners(topP);
+
+    } catch (err) {
+      console.error("Error loading commissions data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCommissionsData();
+
+    // Subscribe to realtime database changes
+    const channel = supabase
+      .channel("admin_commissions_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, () => {
+        loadCommissionsData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "payouts" }, () => {
+        loadCommissionsData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleResetFilters = () => {
     setPartnerFilter("all");
@@ -135,6 +258,46 @@ export default function AdminCommissions() {
     setSearchTerm("");
     setSelectedPeriod("this-month");
   };
+
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) {
+      alert("لا توجد بيانات لتصديرها.");
+      return;
+    }
+    
+    const headers = ["رقم العملية", "الشريك", "نوع العملية", "رقم الطلب", "التاريخ", "المبلغ الأساسي (DH)", "العمولة (%)", "قيمة العمولة (DH)", "الحالة"];
+    const rows = filteredTransactions.map(t => [
+      `"${t.code}"`,
+      `"${t.partner.replace(/"/g, '""')}"`,
+      `"${t.type}"`,
+      `"${t.requestNum}"`,
+      `"${t.dateDay} ${t.dateTime}"`,
+      `"${t.baseAmount}"`,
+      `"${t.percentage}"`,
+      `"${t.commission}"`,
+      `"${t.status}"`
+    ]);
+    
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `goforvisa_commissions_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل بيانات العمولات...</p>
+      </div>
+    );
+  }
 
   // Helper to render partner circular logos matching mockup
   const renderPartnerLogo = (partner: string) => {
@@ -202,16 +365,80 @@ export default function AdminCommissions() {
                           tx.partner.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           tx.requestNum.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesPartner = partnerFilter === "all" || 
-                          (partnerFilter === "eagle" && tx.partner.includes("Eagle")) ||
-                          (partnerFilter === "nile" && tx.partner.includes("Nile")) ||
-                          (partnerFilter === "nour" && tx.partner.includes("النور"));
-    
+    const matchesPartner = partnerFilter === "all" || tx.partner === partnerFilter;
     const matchesType = typeFilter === "all" || tx.type === typeFilter;
     const matchesStatus = statusFilter === "all" || tx.status === statusFilter;
 
-    return matchesSearch && matchesPartner && matchesType && matchesStatus;
+    let matchesPeriod = true;
+    if (selectedPeriod !== "all" && tx.rawDate) {
+      const txDate = new Date(tx.rawDate);
+      const today = new Date();
+      if (selectedPeriod === "this-month") {
+        matchesPeriod = txDate.getMonth() === today.getMonth() && txDate.getFullYear() === today.getFullYear();
+      } else if (selectedPeriod === "last-month") {
+        const lastMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
+        const lastMonthYear = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+        matchesPeriod = txDate.getMonth() === lastMonth && txDate.getFullYear() === lastMonthYear;
+      } else if (selectedPeriod === "this-year") {
+        matchesPeriod = txDate.getFullYear() === today.getFullYear();
+      }
+    }
+
+    return matchesSearch && matchesPartner && matchesType && matchesStatus && matchesPeriod;
   });
+
+  // Calculate monthly profits for the last 12 months dynamically
+  const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+  const last12Months: { year: number; month: number; label: string; key: string }[] = [];
+  const tempDate = new Date();
+  
+  // Create last 12 months array (ending with current month)
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(tempDate.getFullYear(), tempDate.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const label = monthNames[m];
+    const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+    last12Months.push({ year: y, month: m, label, key });
+  }
+
+  // Calculate profits per month
+  const monthlyProfits: Record<string, number> = {};
+  last12Months.forEach(m => {
+    monthlyProfits[m.key] = 0;
+  });
+
+  transactionsData.forEach(tx => {
+    if (!tx.rawDate || tx.status === "ملغى") return;
+    const d = new Date(tx.rawDate);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (monthlyProfits[key] !== undefined) {
+      const val = tx.commissionNum !== undefined ? tx.commissionNum : Number(tx.commission.replace(/,/g, ''));
+      monthlyProfits[key] += val;
+    }
+  });
+
+  const maxVal = Math.max(...last12Months.map(m => monthlyProfits[m.key]), 1000);
+  const maxScale = Math.ceil(maxVal / 5000) * 5000;
+
+  // X start at 70, ends at 763. Spacing = 63.
+  const chartPoints = last12Months.map((m, idx) => {
+    const val = monthlyProfits[m.key];
+    const x = 70 + idx * 63;
+    // Y range: 20 (maxScale) to 230 (0). Height = 210.
+    const y = 230 - (val / maxScale) * 210;
+    return { x, y, val, label: m.label };
+  });
+
+  const linePath = chartPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(" ");
+  const areaPath = `${linePath} L ${chartPoints[chartPoints.length - 1].x},230 L ${chartPoints[0].x},230 Z`;
+
+  const formatYLabel = (val: number) => {
+    if (val >= 1000) {
+      return (val / 1000).toFixed(0) + "K";
+    }
+    return val.toString();
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -235,7 +462,9 @@ export default function AdminCommissions() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block">أرباح هذا الشهر</span>
-            <span className="text-2xl font-black text-[#7C3AED] block mt-1 leading-none" dir="ltr">18,450.00 DH</span>
+            <span className="text-2xl font-black text-[#7C3AED] block mt-1 leading-none" dir="ltr">
+              {stats.thisMonthProfits.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center justify-between mt-2">
               <span className="text-[9px] text-slate-400 font-bold block">مايو 2024</span>
               <div className="flex items-center gap-0.5 text-emerald-650">
@@ -253,7 +482,9 @@ export default function AdminCommissions() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block">العمولات المستحقة</span>
-            <span className="text-2xl font-black text-[#F59E0B] block mt-1 leading-none" dir="ltr">32,600.00 DH</span>
+            <span className="text-2xl font-black text-[#F59E0B] block mt-1 leading-none" dir="ltr">
+              {stats.dueCommissions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center justify-between mt-2">
               <span className="text-[9px] text-slate-400 font-bold block">في انتظار الدفع</span>
               <div className="flex items-center gap-0.5 text-emerald-650">
@@ -271,7 +502,9 @@ export default function AdminCommissions() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block">العمولات المدفوعة</span>
-            <span className="text-2xl font-black text-[#10B981] block mt-1 leading-none" dir="ltr">67,850.00 DH</span>
+            <span className="text-2xl font-black text-[#10B981] block mt-1 leading-none" dir="ltr">
+              {stats.paidCommissions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center justify-between mt-2">
               <span className="text-[9px] text-slate-400 font-bold block">إجمالي المدفوعات</span>
               <div className="flex items-center gap-0.5 text-emerald-650">
@@ -289,7 +522,9 @@ export default function AdminCommissions() {
         <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-4">
           <div className="text-right flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block">إجمالي الأرباح</span>
-            <span className="text-2xl font-black text-[#0054A6] block mt-1 leading-none" dir="ltr">145,250.00 DH</span>
+            <span className="text-2xl font-black text-[#0054A6] block mt-1 leading-none" dir="ltr">
+              {stats.totalCommissions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center justify-between mt-2">
               <span className="text-[9px] text-slate-400 font-bold block">منذ بداية العام</span>
               <div className="flex items-center gap-0.5 text-emerald-650">
@@ -362,12 +597,12 @@ export default function AdminCommissions() {
               <select 
                 value={partnerFilter}
                 onChange={(e) => setPartnerFilter(e.target.value)}
-                className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-right text-xs font-bold text-slate-650 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer h-[38px]"
+                className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-right text-xs font-bold text-slate-655 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer h-[38px]"
               >
                 <option value="all">كل الشركاء</option>
-                <option value="eagle">Eagle Tourism</option>
-                <option value="nile">Nile Travel</option>
-                <option value="nour">شركة النور</option>
+                {uniquePartners.map((p, idx) => (
+                  <option key={idx} value={p}>{p}</option>
+                ))}
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
             </div>
@@ -375,7 +610,7 @@ export default function AdminCommissions() {
 
           {/* 5. Select Transaction Type */}
           <div className="flex flex-col gap-1.5 min-w-[130px]">
-            <label className="text-[11px] text-slate-550 font-bold">نوع العملية</label>
+            <label className="text-[11px] text-slate-555 font-bold">نوع العملية</label>
             <div className="relative">
               <select 
                 value={typeFilter} 
@@ -394,7 +629,10 @@ export default function AdminCommissions() {
 
         {/* Left Side: Export Button (Outlined white with blue text/icon) */}
         <div className="flex items-center justify-end shrink-0 pt-4 md:pt-0">
-          <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-[#0054A6] hover:bg-blue-50/50 text-[#0054A6] rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer h-[38px]">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 px-4 py-2 bg-white border border-[#0054A6] hover:bg-blue-50/50 text-[#0054A6] rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer h-[38px]"
+          >
             <Download className="w-4 h-4 text-[#0054A6]" />
             <span>تصدير</span>
           </button>
@@ -472,70 +710,51 @@ export default function AdminCommissions() {
               <line x1="45" y1="230" x2="780" y2="230" stroke="#E2E8F0" strokeWidth="1.2" />
 
               {/* Monthly X-Axis Labels (Left to Right) */}
-              <text x="70" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يونيو</text>
-              <text x="133" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يوليو</text>
-              <text x="196" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أغسطس</text>
-              <text x="259" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">سبتمبر</text>
-              <text x="322" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أكتوبر</text>
-              <text x="385" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">نوفمبر</text>
-              <text x="448" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">ديسمبر</text>
-              <text x="511" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يناير</text>
-              <text x="574" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">فبراير</text>
-              <text x="637" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مارس</text>
-              <text x="700" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل</text>
-              <text x="763" y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مايو</text>
+              {chartPoints.map((p, idx) => (
+                <text key={idx} x={p.x} y="245" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">
+                  {p.label}
+                </text>
+              ))}
 
               {/* Y-Axis scale tags (Left Aligned) */}
-              <text x="30" y="23" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">40K</text>
-              <text x="30" y="75" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">30K</text>
-              <text x="30" y="128" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">20K</text>
-              <text x="30" y="180" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">10K</text>
-              <text x="30" y="207" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">5K</text>
-              <text x="30" y="233" textAnchor="end" className="text-[7px] fill-slate-355 font-bold">0</text>
+              <text x="30" y="23" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">{formatYLabel(maxScale)}</text>
+              <text x="30" y="75" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">{formatYLabel(maxScale * 0.75)}</text>
+              <text x="30" y="128" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">{formatYLabel(maxScale * 0.5)}</text>
+              <text x="30" y="180" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">{formatYLabel(maxScale * 0.25)}</text>
+              <text x="30" y="207" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">{formatYLabel(maxScale * 0.125)}</text>
+              <text x="30" y="233" textAnchor="end" className="text-[7px] fill-slate-500 font-bold">0</text>
 
               {/* Area filled underneath path */}
-              <path 
-                d="M 70,165 L 133,150 L 196,131 L 259,144 L 322,116 L 385,126 L 448,107 L 511,100 L 574,82 L 637,120 L 700,151 L 763,133 L 763,230 L 70,230 Z" 
-                fill="url(#earnings-grad-3)" 
-              />
+              {chartPoints.length > 0 && (
+                <path 
+                  d={areaPath} 
+                  fill="url(#earnings-grad-3)" 
+                />
+              )}
 
               {/* Line stroke */}
-              <path 
-                d="M 70,165 L 133,150 L 196,131 L 259,144 L 322,116 L 385,126 L 448,107 L 511,100 L 574,82 L 637,120 L 700,151 L 763,133" 
-                fill="none" 
-                stroke="#0054A6" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
+              {chartPoints.length > 0 && (
+                <path 
+                  d={linePath} 
+                  fill="none" 
+                  stroke="#0054A6" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              )}
 
               {/* Bullet Node Highlights */}
-              <circle cx="70" cy="165" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="133" cy="150" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="196" cy="131" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="259" cy="144" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="322" cy="116" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="385" cy="126" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="448" cy="107" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="511" cy="100" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="574" cy="82" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="637" cy="120" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="700" cy="151" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
-              <circle cx="763" cy="133" r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
+              {chartPoints.map((p, idx) => (
+                <circle key={idx} cx={p.x} cy={p.y} r="3" fill="#FFFFFF" stroke="#0054A6" strokeWidth="2" />
+              ))}
 
               {/* Tooltip values on nodes */}
-              <text x="70" y="153" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">12,450</text>
-              <text x="133" y="138" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">15,230</text>
-              <text x="196" y="119" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">18,900</text>
-              <text x="259" y="132" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">16,450</text>
-              <text x="322" y="104" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">21,730</text>
-              <text x="385" y="114" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">19,800</text>
-              <text x="448" y="95" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">23,440</text>
-              <text x="511" y="88" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">24,800</text>
-              <text x="574" y="70" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">28,120</text>
-              <text x="637" y="108" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">20,950</text>
-              <text x="700" y="139" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">15,120</text>
-              <text x="763" y="121" textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">18,450</text>
+              {chartPoints.map((p, idx) => (
+                <text key={idx} x={p.x} y={p.y - 12} textAnchor="middle" fill="#0054A6" className="text-[7px] font-black">
+                  {p.val > 0 ? p.val.toLocaleString('en-US', { maximumFractionDigits: 0 }) : "0"}
+                </text>
+              ))}
             </svg>
           </div>
         </div>
@@ -627,13 +846,20 @@ export default function AdminCommissions() {
                         </span>
                       </td>
 
-                      {/* Actions (White square buttons) */}
+                      {/* Actions (White square button) */}
                       <td className="py-4 pl-6 text-left">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button className="w-7 h-7 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-blue-500 hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer shadow-3xs" title="عرض التفاصيل">
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="w-7 h-7 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 hover:border-slate-350 transition-all cursor-pointer shadow-3xs" title="خيارات إضافية">
+                          <button 
+                            onClick={() => { 
+                              setSelectedTx(tx); 
+                              setFormCommission(Number(tx.commission.replace(/,/g, ''))); 
+                              setFormStatus(tx.status === 'مدفوعة' ? 'تم الإنجاز' : tx.status === 'ملغى' ? 'ملغى' : 'قيد المعالجة'); 
+                              setIsEditing(true); 
+                              setIsModalOpen(true); 
+                            }}
+                            className="w-7 h-7 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-650 hover:bg-slate-50 hover:border-slate-350 transition-all cursor-pointer shadow-3xs" 
+                            title="تعديل وإجراءات"
+                          >
                             <MoreVertical className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -683,6 +909,142 @@ export default function AdminCommissions() {
         </div>
 
       </div>
+
+      {/* Transaction Details & Quick Edit Modal */}
+      {isModalOpen && selectedTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-md text-right" dir="rtl">
+            <div className="p-6 border-b border-slate-50 flex justify-between items-center">
+              <button 
+                onClick={() => { setIsModalOpen(false); setSelectedTx(null); setIsEditing(false); }}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-[#0054A6]" />
+                <span>{isEditing ? "تعديل وإجراءات العملية المالية" : "تفاصيل العملية المالية"}</span>
+              </h3>
+            </div>
+
+            <form onSubmit={handleSaveChanges} className="p-6 space-y-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">رقم العملية</span>
+                  <span className="text-xs font-black text-slate-800" dir="ltr">{selectedTx.code}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">الشريك</span>
+                  <span className="text-xs font-black text-slate-800">{selectedTx.partner}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">نوع العملية</span>
+                  <span className="text-xs font-bold text-slate-700">{selectedTx.type}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">رقم طلب الملف</span>
+                  <span className="text-xs font-black text-[#0054A6]" dir="ltr">{selectedTx.requestNum}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">تاريخ العملية</span>
+                  <span className="text-xs font-bold text-slate-700">{selectedTx.dateDay} - {selectedTx.dateTime}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500 font-bold">المبلغ الأساسي للخدمة</span>
+                  <span className="text-xs font-black text-slate-800">{selectedTx.baseAmount} DH</span>
+                </div>
+
+                {/* Earning / Commission Input */}
+                <div className="py-2 border-b border-slate-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold">عمولة الشريك المخصصة</span>
+                    {!isEditing ? (
+                      <span className="text-xs font-black text-[#0054A6]">{selectedTx.commission} DH ({selectedTx.percentage})</span>
+                    ) : (
+                      <div className="relative w-32">
+                        <input 
+                          type="number"
+                          value={formCommission}
+                          onChange={(e) => setFormCommission(Number(e.target.value))}
+                          className="w-full pl-8 pr-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-right text-xs focus:bg-white focus:border-[#0054A6] outline-none text-slate-800 font-bold"
+                          required
+                        />
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">DH</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Selection */}
+                <div className="py-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold">حالة الدفع (من حالة الملف)</span>
+                    {!isEditing ? (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black border ${selectedTx.statusColor}`}>
+                        {selectedTx.status}
+                      </span>
+                    ) : (
+                      <select
+                        value={formStatus}
+                        onChange={(e) => setFormStatus(e.target.value)}
+                        className="w-40 appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-2 py-1 text-right text-xs font-bold text-slate-655 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer"
+                      >
+                        <option value="قيد المعالجة">مستحقة (قيد المعالجة)</option>
+                        <option value="تم الإنجاز">مدفوعة (تم الإنجاز)</option>
+                        <option value="ملغى">ملغى</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 flex gap-3">
+                {isEditing ? (
+                  <>
+                    <button 
+                      type="submit"
+                      disabled={actionLoading}
+                      className="flex-1 py-2 bg-[#0054A6] hover:bg-[#003B75] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {actionLoading ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <span>حفظ التغييرات</span>
+                      )}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="flex-1 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-655 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >
+                      إلغاء
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="flex-1 py-2 bg-[#0054A6] hover:bg-[#003B75] text-white rounded-xl text-xs font-bold transition-all text-center cursor-pointer"
+                    >
+                      تعديل العملية
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => { setIsModalOpen(false); setSelectedTx(null); }}
+                      className="flex-1 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-655 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >
+                      إغلاق
+                    </button>
+                  </>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

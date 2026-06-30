@@ -67,17 +67,20 @@ export default function RegisterPage() {
 
     setLoading(true);
     
-    setTimeout(() => {
-      registerPartner({
-        name,
-        company: company || undefined,
-        phone,
-        email,
-        city,
-      });
+    registerPartner({
+      name,
+      company: company || undefined,
+      phone,
+      email,
+      city,
+    }, password).then((res) => {
       setLoading(false);
-      router.push("/dashboard");
-    }, 1000);
+      if (res.success) {
+        router.push("/dashboard");
+      } else {
+        setError(res.error || "فشل إنشاء الحساب. الرجاء المحاولة مرة أخرى.");
+      }
+    });
   };
 
   const citiesList = [

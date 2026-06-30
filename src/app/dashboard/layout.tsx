@@ -67,7 +67,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { partner, logout, notifications } = useApp();
+  const { partner, logout, notifications, loading } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -75,15 +75,14 @@ export default function DashboardLayout({
 
   // Redirect if not logged in
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (!loading) {
       if (!partner) {
         router.push("/login");
       } else {
         setAuthChecked(true);
       }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [partner, router]);
+    }
+  }, [partner, loading, router]);
 
   if (!authChecked) {
     return (
@@ -127,7 +126,7 @@ export default function DashboardLayout({
       name: "الإشعارات",
       href: "/dashboard/notifications",
       icon: Bell,
-      badge: notifications.filter(n => !n.read).length || 5 // Match mockup number 5
+      badge: notifications.filter(n => !n.read).length
     },
     {
       name: "الملف الشخصي",
@@ -259,9 +258,11 @@ export default function DashboardLayout({
               className="relative p-2 text-slate-500 hover:text-primary-navy hover:bg-slate-50 rounded-full transition-colors border border-slate-100"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-red-500 text-white font-extrabold text-[10px] rounded-full flex items-center justify-center border-2 border-white">
-                5
-              </span>
+              {notifications.filter(n => !n.read).length > 0 && (
+                <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-red-500 text-white font-extrabold text-[10px] rounded-full flex items-center justify-center border-2 border-white">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
             </Link>
 
             {/* Language Selector Dropdown */}

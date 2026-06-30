@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Users, 
@@ -85,124 +85,203 @@ const FranceFlag = () => (
   </svg>
 );
 
+import { supabase } from "@/utils/supabase";
+
 export default function AdminPartners() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCity, setSelectedCity] = useState("كل المدن");
+  const [selectedType, setSelectedType] = useState("كل الأنواع");
+  const [selectedStatus, setSelectedStatus] = useState("كل الحالات");
+  const [joinDateFilter, setJoinDateFilter] = useState("all");
 
-  const partnersData = [
-    {
-      name: "شركة أبو العمران للسفريات",
-      email: "info@aboulomrane.com",
-      type: "وكالة سفر",
-      country: "المغرب",
-      flag: MoroccoFlag,
-      files: 312,
-      commission: "15,420.00 DH",
-      status: "مفعل",
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      initials: "أع"
-    },
-    {
-      name: "Eagle Tourism LLC",
-      email: "contact@eagletourism.ae",
-      type: "شركة سياحية",
-      country: "الإمارات",
-      flag: UaeFlag,
-      files: 198,
-      commission: "9,850.00 DH",
-      status: "مفعل",
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      initials: "ET"
-    },
-    {
-      name: "رحالة العالم للسفر",
-      email: "hello@rahalt.com",
-      type: "مستشار سفر",
-      country: "السعودية",
-      flag: SaudiFlag,
-      files: 87,
-      commission: "5,600.00 DH",
-      status: "قيد المراجعة",
-      color: "bg-amber-50 text-amber-600 border-amber-100",
-      initials: "رو"
-    },
-    {
-      name: "Nile Travel",
-      email: "info@niletravel.com",
-      type: "وكالة سفر",
-      country: "مصر",
-      flag: EgyptFlag,
-      files: 64,
-      commission: "4,250.00 DH",
-      status: "مفعل",
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      initials: "NT"
-    },
-    {
-      name: "Jordan Trips",
-      email: "contact@jordantrips.com",
-      type: "مستشار سفر",
-      country: "الأردن",
-      flag: JordanFlag,
-      files: 0,
-      commission: "0.00 DH",
-      status: "مدعو",
-      color: "bg-slate-100 text-slate-500 border-slate-200",
-      initials: "JT"
-    },
-    {
-      name: "Tunis Voyages",
-      email: "info@tunisvoyages.tn",
-      type: "شركة سياحية",
-      country: "تونس",
-      flag: TunisiaFlag,
-      files: 52,
-      commission: "3,730.00 DH",
-      status: "مفعل",
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      initials: "TV"
-    },
-    {
-      name: "Istanbul Travel",
-      email: "info@istanbultravel.com",
-      type: "وكالة سفر",
-      country: "تركيا",
-      flag: TurkeyFlag,
-      files: 18,
-      commission: "1,200.00 DH",
-      status: "موقوف",
-      color: "bg-rose-50 text-rose-600 border-rose-100",
-      initials: "IT"
-    },
-    {
-      name: "Paris Travel Advisor",
-      email: "contact@paristravel.fr",
-      type: "مستشار سفر",
-      country: "فرنسا",
-      flag: FranceFlag,
-      files: 41,
-      commission: "2,900.00 DH",
-      status: "مفعل",
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      initials: "PT"
+  const [partnersList, setPartnersList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+  });
+
+  useEffect(() => {
+    async function loadPartnersData() {
+      try {
+        setLoading(true);
+
+        // 1. Fetch all partners and admin users to filter out admins
+        const [partnersRes, adminUsersRes] = await Promise.all([
+          supabase.from("partners").select("*"),
+          supabase.from("admin_users").select("email")
+        ]);
+
+        // 2. Fetch clients to compute stats
+        const { data: dbClients, error: clientsErr } = await supabase
+          .from("clients")
+          .select("partner_id, commission, status");
+
+        if (partnersRes.error || adminUsersRes.error || clientsErr) {
+          console.error("Supabase error:", partnersRes.error, adminUsersRes.error, clientsErr);
+          return;
+        }
+
+        const adminEmails = new Set((adminUsersRes.data || []).map(u => u.email.toLowerCase()));
+        adminEmails.add("admin@goforvisa.ma"); // fallback
+
+        const partners = (partnersRes.data || []).filter(p => p.email && !adminEmails.has(p.email.toLowerCase()));
+        const clients = dbClients || [];
+
+        // 3. Map partners to UI structure
+        const mapped = partners.map((p) => {
+          const partnerClients = clients.filter(c => c.partner_id === p.id);
+          const filesCount = partnerClients.length;
+          
+          const totalCommission = partnerClients
+            .filter(c => c.status !== "ملغى")
+            .reduce((sum, c) => sum + Number(c.commission || 0), 0);
+
+          // Initials logic
+          const initials = p.company
+            ? p.company.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+            : p.name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+
+          return {
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            company: p.company || "",
+            phone: p.phone || "",
+            type: "وكالة سفر", // Default type since it's not stored
+            city: p.city || "الدار البيضاء",
+            country: "المغرب",
+            flag: MoroccoFlag,
+            files: filesCount,
+            commission: `${totalCommission.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH`,
+            status: "مفعل", // Default since they registered and we confirm all
+            color: "bg-emerald-50 text-emerald-600 border-emerald-100",
+            initials: initials || "ش",
+            created_at: p.created_at
+          };
+        });
+
+        // Sort by creation date descending
+        mapped.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setPartnersList(mapped);
+
+        // Stats calculation
+        const total = mapped.length;
+        const active = mapped.filter(p => p.status === "مفعل").length;
+
+        setStats({ total, active });
+
+      } catch (err) {
+        console.error("Error fetching partners data:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+
+    loadPartnersData();
+
+    // Subscribe to realtime changes in partners and clients
+    const channel = supabase
+      .channel("admin_partners_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "partners" }, () => {
+        console.log("Realtime change in partners table detected on partners page.");
+        loadPartnersData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, () => {
+        console.log("Realtime change in clients table detected on partners page.");
+        loadPartnersData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Export to CSV function
+  const handleExportCSV = () => {
+    if (filteredPartners.length === 0) {
+      alert("لا توجد بيانات لتصديرها.");
+      return;
+    }
+    
+    // CSV headers (UTF-8 with BOM for correct Arabic rendering in Excel)
+    const headers = ["الشريك", "البريد الإلكتروني", "نوع الشريك", "المدينة", "طلبات مستلمة", "عمولة مكتسبة", "الحالة"];
+    const rows = filteredPartners.map(p => [
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.email.replace(/"/g, '""')}"`,
+      `"${p.type.replace(/"/g, '""')}"`,
+      `"${p.city.replace(/"/g, '""')}"`,
+      p.files,
+      `"${p.commission.replace(/"/g, '""')}"`,
+      `"${p.status.replace(/"/g, '""')}"`
+    ]);
+    
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `goforvisa_partners_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل بيانات الشركاء...</p>
+      </div>
+    );
+  }
+
+  const filteredPartners = partnersList
+    .filter(p => {
+      const q = searchTerm.toLowerCase().trim();
+      if (!q) return true;
+      return (
+        p.name.toLowerCase().includes(q) || 
+        p.email.toLowerCase().includes(q) || 
+        p.company.toLowerCase().includes(q)
+      );
+    })
+    .filter(p => selectedCity === "كل المدن" || p.city === selectedCity)
+    .filter(p => selectedType === "كل الأنواع" || p.type === selectedType)
+    .filter(p => selectedStatus === "كل الحالات" || p.status === selectedStatus)
+    .filter(p => {
+      if (joinDateFilter === "all") return true;
+      const pDate = new Date(p.created_at);
+      const today = new Date();
+      if (joinDateFilter === "today") {
+        return pDate.toDateString() === today.toDateString();
+      } else if (joinDateFilter === "thisMonth") {
+        return pDate.getMonth() === today.getMonth() && pDate.getFullYear() === today.getFullYear();
+      } else if (joinDateFilter === "thisYear") {
+        return pDate.getFullYear() === today.getFullYear();
+      }
+      return true;
+    });
 
   return (
     <div className="space-y-6">
       
       {/* Breadcrumbs */}
       <div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold mb-1.5">
+        <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold mb-1.5 justify-start">
           <Link href="/admin" className="hover:text-[#0054A6]">الرئيسية</Link>
           <span>&gt;</span>
           <span>الشركاء</span>
         </div>
         <h1 className="text-2xl font-extrabold text-slate-800">الشركاء</h1>
-        <p className="text-xs text-slate-500 font-medium">إدارة ومتابعة شركاء شركة GoForVisa</p>
+        <p className="text-xs text-slate-500 font-medium">إدارة ومتابعة شركاء GoForVisa</p>
       </div>
 
-      {/* KPI Cards (4 Cards) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPI Cards (2 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         
         {/* Card 1: إجمالي الشركاء */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
@@ -211,7 +290,7 @@ export default function AdminPartners() {
           </div>
           <div className="text-left flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">إجمالي الشركاء</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">128</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{stats.total}</span>
             <span className="text-[9px] text-slate-400 font-bold block mt-1">شريك مسجل</span>
           </div>
         </div>
@@ -223,32 +302,10 @@ export default function AdminPartners() {
           </div>
           <div className="text-left flex-1">
             <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">الشركاء المفعلون</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">112</span>
-            <span className="text-[9px] text-emerald-600 font-bold block mt-1">87.5% من الإجمالي</span>
-          </div>
-        </div>
-
-        {/* Card 3: قيد المراجعة */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
-          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div className="text-left flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">قيد المراجعة</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">8</span>
-            <span className="text-[9px] text-amber-600 font-bold block mt-1">6.3% من الإجمالي</span>
-          </div>
-        </div>
-
-        {/* Card 4: تمت دعوتهم */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex items-center justify-between gap-4">
-          <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
-            <UserPlus className="w-5 h-5" />
-          </div>
-          <div className="text-left flex-1">
-            <span className="text-[10px] text-slate-400 font-extrabold block whitespace-nowrap">تمت دعوتهم</span>
-            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">8</span>
-            <span className="text-[9px] text-purple-600 font-bold block mt-1">6.3% من الإجمالي</span>
+            <span className="text-2xl font-black text-slate-800 block mt-1 leading-none">{stats.active}</span>
+            <span className="text-[9px] text-emerald-600 font-bold block mt-1">
+              {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}% من الإجمالي
+            </span>
           </div>
         </div>
 
@@ -273,44 +330,71 @@ export default function AdminPartners() {
         <div className="flex flex-wrap items-center gap-3">
           
           <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer">
-              <option>تاريخ الانضمام</option>
-              <option>من - إلى</option>
+            <select 
+              value={joinDateFilter}
+              onChange={(e) => setJoinDateFilter(e.target.value)}
+              className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer"
+            >
+              <option value="all">تاريخ الانضمام</option>
+              <option value="today">اليوم</option>
+              <option value="thisMonth">هذا الشهر</option>
+              <option value="thisYear">هذا العام</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
           </div>
 
           <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer">
-              <option>كل الدول</option>
-              <option>المغرب</option>
-              <option>السعودية</option>
-              <option>الإمارات</option>
+            <select 
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer"
+            >
+              <option value="كل المدن">كل المدن</option>
+              <option value="الدار البيضاء">الدار البيضاء</option>
+              <option value="الرباط">الرباط</option>
+              <option value="مراكش">مراكش</option>
+              <option value="طنجة">طنجة</option>
+              <option value="فاس">فاس</option>
+              <option value="أكادير">أكادير</option>
+              <option value="وجدة">وجدة</option>
+              <option value="تطوان">تطوان</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
           </div>
 
           <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer">
-              <option>كل الأنواع</option>
-              <option>وكالة سفر</option>
-              <option>شركة سياحية</option>
-              <option>مستشار سفر</option>
+            <select 
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer"
+            >
+              <option value="كل الأنواع">كل الأنواع</option>
+              <option value="وكالة سفر">وكالة سفر</option>
+              <option value="شركة سياحية">شركة سياحية</option>
+              <option value="مستشار سفر">مستشار سفر</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
           </div>
 
           <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer">
-              <option>كل الحالات</option>
-              <option>مفعل</option>
-              <option>قيد المراجعة</option>
-              <option>موقوف</option>
+            <select 
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-xs font-bold text-slate-600 focus:bg-white focus:border-[#0054A6] outline-none cursor-pointer"
+            >
+              <option value="كل الحالات">كل الحالات</option>
+              <option value="مفعل">مفعل</option>
+              <option value="قيد المراجعة">قيد المراجعة</option>
+              <option value="مدعو">مدعو</option>
+              <option value="موقوف">موقوف</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
           </div>
 
-          <button className="flex items-center gap-1.5 px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
             <Download className="w-3.5 h-3.5" />
             <span>تصدير</span>
           </button>
@@ -327,7 +411,7 @@ export default function AdminPartners() {
               <tr className="bg-slate-50/50 text-slate-400 font-bold border-b border-slate-100">
                 <th className="py-4 pr-6 text-right">الشريك</th>
                 <th className="py-4 text-right">نوع الشريك</th>
-                <th className="py-4 text-right">الدولة</th>
+                <th className="py-4 text-right">المدينة</th>
                 <th className="py-4 text-right">طلبات مستلمة</th>
                 <th className="py-4 text-right">عمولة مكتسبة</th>
                 <th className="py-4 text-right">الحالة</th>
@@ -335,9 +419,8 @@ export default function AdminPartners() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 font-medium">
-              {partnersData
-                .filter(p => p.name.includes(searchTerm) || p.email.includes(searchTerm))
-                .map((partner, idx) => {
+              {filteredPartners.length > 0 ? (
+                filteredPartners.map((partner, idx) => {
                   const Flag = partner.flag;
                   return (
                     <tr key={idx} className="hover:bg-slate-50/40 transition-colors">
@@ -358,11 +441,11 @@ export default function AdminPartners() {
                       {/* Partner Type */}
                       <td className="py-4 text-slate-500">{partner.type}</td>
 
-                      {/* Country Flag */}
+                      {/* City & Country Flag */}
                       <td className="py-4">
                         <div className="flex items-center gap-1.5" dir="rtl">
                           <Flag />
-                          <span className="text-[10px] text-slate-500 font-bold">{partner.country}</span>
+                          <span className="text-[10px] text-slate-500 font-bold">{partner.city} ({partner.country})</span>
                         </div>
                       </td>
 
@@ -393,25 +476,28 @@ export default function AdminPartners() {
 
                     </tr>
                   );
-                })}
+                })
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 font-bold">
+                    لا يوجد شركاء مسجلين يطابقون فلاتر البحث الحالية.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="bg-slate-50/30 px-6 py-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-bold">
-          <span>عرض 1 - 8 من 128 شريك</span>
+          <span>عرض 1 - {filteredPartners.length} من {partnersList.length} شريك</span>
           
           <div className="flex items-center gap-1.5">
             <button className="p-1 border border-slate-200 rounded-lg bg-white text-slate-400 hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
               <ChevronRight className="w-4 h-4" />
             </button>
             <button className="w-8 h-8 rounded-lg bg-[#0054A6] text-white flex items-center justify-center">1</button>
-            <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">2</button>
-            <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">3</button>
-            <span className="px-1 text-slate-300">...</span>
-            <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">16</button>
-            <button className="p-1 border border-slate-200 rounded-lg bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+            <button className="p-1 border border-slate-200 rounded-lg bg-white text-slate-400 hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
@@ -422,3 +508,4 @@ export default function AdminPartners() {
     </div>
   );
 }
+

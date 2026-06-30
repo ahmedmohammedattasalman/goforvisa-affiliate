@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, UserSquare2 } from "lucide-react";
+import { supabase } from "@/utils/supabase";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -30,13 +31,39 @@ export default function AdminLoginPage() {
     }
 
     setLoading(true);
-    
-    setTimeout(() => {
-      // Allow any login for demo purposes
-      localStorage.setItem("adminUser", JSON.stringify("أحمد الإدريسي"));
-      setLoading(false);
+    try {
+      const { data, error: authErr } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authErr) {
+        setError("خطأ في تسجيل الدخول: " + authErr.message);
+        setLoading(false);
+        return;
+      }
+
+      // Check if user is an authorized admin or employee
+      const userRole = data.user?.app_metadata?.role;
+      const isUserAdmin = email.endsWith("@goforvisa.ma") || 
+                          userRole === "admin" || 
+                          userRole === "super_admin" || 
+                          userRole === "employee";
+      if (!isUserAdmin) {
+        setError("عذراً، هذا الحساب ليس لديه صلاحيات المسؤول.");
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
+      // Use user metadata name or default to the name from partners table
+      const adminName = data.user?.user_metadata?.name || "المسؤول";
+      localStorage.setItem("adminUser", JSON.stringify(adminName));
       router.push("/admin");
-    }, 800);
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ غير متوقع أثناء تسجيل الدخول.");
+      setLoading(false);
+    }
   };
 
   return (

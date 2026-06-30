@@ -1,6 +1,7 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase";
 import { 
   Users, 
   CheckCircle, 
@@ -35,89 +36,515 @@ const FlagWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 // Crisp SVG Flags
-const FranceFlag = () => (
+const UkFlag = () => (
   <FlagWrapper>
-    <svg className="w-7 h-5" viewBox="0 0 3 2">
-      <rect width="1" height="2" fill="#002395" />
-      <rect x="1" width="1" height="2" fill="#FFFFFF" />
-      <rect x="2" width="1" height="2" fill="#ED2939" />
+    <svg className="w-7 h-5" viewBox="0 0 50 30">
+      <rect width="50" height="30" fill="#012169" />
+      <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#FFFFFF" strokeWidth="6" />
+      <path d="M 0,0 L 50,30 M 0,30 L 50,0" stroke="#C8102E" strokeWidth="4" />
+      <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#FFFFFF" strokeWidth="10" />
+      <path d="M 25,0 L 25,30 M 0,15 L 50,15" stroke="#C8102E" strokeWidth="6" />
     </svg>
   </FlagWrapper>
 );
 
-const SpainFlag = () => (
+const CanadaFlag = () => (
   <FlagWrapper>
-    <svg className="w-7 h-5" viewBox="0 0 3 2">
-      <rect width="3" height="2" fill="#C60B1E" />
-      <rect y="0.5" width="3" height="1" fill="#FBE122" />
+    <svg className="w-7 h-5" viewBox="0 0 240 120">
+      <rect width="60" height="120" fill="#D80027" />
+      <rect x="60" width="120" height="120" fill="#FFFFFF" />
+      <rect x="180" width="60" height="120" fill="#D80027" />
+      <path d="M 120,32 L 123,43 L 131,39 L 128,48 L 137,49 L 128,55 L 132,66 L 123,61 L 122,85 L 118,85 L 117,61 L 108,66 L 112,55 L 103,49 L 112,48 L 109,39 L 117,43 Z" fill="#D80027" />
     </svg>
   </FlagWrapper>
 );
 
-const ItalyFlag = () => (
+const UsaFlag = () => (
   <FlagWrapper>
-    <svg className="w-7 h-5" viewBox="0 0 3 2">
-      <rect width="1" height="2" fill="#009246" />
-      <rect x="1" width="1" height="2" fill="#F1F2F1" />
-      <rect x="2" width="1" height="2" fill="#CE2B37" />
+    <svg className="w-7 h-5" viewBox="0 0 76 40">
+      <rect width="76" height="40" fill="#FFFFFF" />
+      <rect width="76" height="3.08" fill="#B22234" />
+      <rect y="6.15" width="76" height="3.08" fill="#B22234" />
+      <rect y="12.31" width="76" height="3.08" fill="#B22234" />
+      <rect y="18.46" width="76" height="3.08" fill="#B22234" />
+      <rect y="24.62" width="76" height="3.08" fill="#B22234" />
+      <rect y="30.77" width="76" height="3.08" fill="#B22234" />
+      <rect y="36.92" width="76" height="3.08" fill="#B22234" />
+      <rect width="30.4" height="21.54" fill="#3C3B6E" />
+      <circle cx="5" cy="4" r="1" fill="#FFFFFF" />
+      <circle cx="10" cy="4" r="1" fill="#FFFFFF" />
+      <circle cx="15" cy="4" r="1" fill="#FFFFFF" />
+      <circle cx="20" cy="4" r="1" fill="#FFFFFF" />
+      <circle cx="25" cy="4" r="1" fill="#FFFFFF" />
+      <circle cx="7.5" cy="8" r="1" fill="#FFFFFF" />
+      <circle cx="12.5" cy="8" r="1" fill="#FFFFFF" />
+      <circle cx="17.5" cy="8" r="1" fill="#FFFFFF" />
+      <circle cx="22.5" cy="8" r="1" fill="#FFFFFF" />
+      <circle cx="5" cy="12" r="1" fill="#FFFFFF" />
+      <circle cx="10" cy="12" r="1" fill="#FFFFFF" />
+      <circle cx="15" cy="12" r="1" fill="#FFFFFF" />
+      <circle cx="20" cy="12" r="1" fill="#FFFFFF" />
+      <circle cx="25" cy="12" r="1" fill="#FFFFFF" />
+      <circle cx="7.5" cy="16" r="1" fill="#FFFFFF" />
+      <circle cx="12.5" cy="16" r="1" fill="#FFFFFF" />
+      <circle cx="17.5" cy="16" r="1" fill="#FFFFFF" />
+      <circle cx="22.5" cy="16" r="1" fill="#FFFFFF" />
     </svg>
   </FlagWrapper>
 );
 
-const TurkeyFlag = () => (
+const DenmarkFlag = () => (
   <FlagWrapper>
-    <svg className="w-7 h-5" viewBox="0 0 3 2">
-      <rect width="3" height="2" fill="#E30A17" />
-      <circle cx="1.1" cy="1" r="0.4" fill="#FFFFFF" />
-      <circle cx="1.2" cy="1" r="0.32" fill="#E30A17" />
-      <polygon points="1.6,1 1.45,1.07 1.48,0.9 1.35,0.8 1.52,0.8" fill="#FFFFFF" />
+    <svg className="w-7 h-5" viewBox="0 0 37 28">
+      <rect width="37" height="28" fill="#C8102E" />
+      <rect x="12" width="4" height="28" fill="#FFFFFF" />
+      <rect y="12" width="37" height="4" fill="#FFFFFF" />
     </svg>
   </FlagWrapper>
 );
 
-const GermanyFlag = () => (
+const AustraliaFlag = () => (
   <FlagWrapper>
-    <svg className="w-7 h-5" viewBox="0 0 3 2">
-      <rect width="3" height="2" fill="#FFCF00" />
-      <rect width="3" height="1.33" fill="#DD0000" />
-      <rect width="3" height="0.67" fill="#000000" />
+    <svg className="w-7 h-5" viewBox="0 0 80 40">
+      <rect width="80" height="40" fill="#012169" />
+      <g transform="scale(0.8)">
+        <rect width="50" height="25" fill="#012169" />
+        <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#FFFFFF" strokeWidth="5" />
+        <path d="M 0,0 L 50,25 M 0,25 L 50,0" stroke="#C8102E" strokeWidth="3" />
+        <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#FFFFFF" strokeWidth="8" />
+        <path d="M 25,0 L 25,25 M 0,12.5 L 50,12.5" stroke="#C8102E" strokeWidth="5" />
+      </g>
+      <polygon points="20,26 21,30 25,30 22,33 23,37 20,35 17,37 18,33 15,30 19,30" fill="#FFFFFF" />
+      <circle cx="60" cy="8" r="1.5" fill="#FFFFFF" />
+      <circle cx="70" cy="16" r="1.5" fill="#FFFFFF" />
+      <circle cx="60" cy="24" r="1.5" fill="#FFFFFF" />
+      <circle cx="50" cy="18" r="1.5" fill="#FFFFFF" />
+      <circle cx="65" cy="30" r="1" fill="#FFFFFF" />
     </svg>
   </FlagWrapper>
 );
+
+import { useSearchParams } from "next/navigation";
 
 export default function AdminDashboard() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
+
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activePartners: 0,
+    completedFiles: 0,
+    totalFiles: 0,
+    dueCommissions: 0,
+    totalRevenue: 0,
+    totalCommissions: 0,
+    paidCommissions: 0,
+    pendingCommissions: 0,
+  });
+  
+  const [rawClients, setRawClients] = useState<any[]>([]);
+  const [rawPayouts, setRawPayouts] = useState<any[]>([]);
+  const [timeRange, setTimeRange] = useState<"today" | "7days" | "thisMonth" | "30days" | "all">("30days");
+  const [dateFilterOpen, setDateFilterOpen] = useState(false);
+
+  const [recentFiles, setRecentFiles] = useState<any[]>([]);
+  const [recentPartners, setRecentPartners] = useState<any[]>([]);
+  const [statusBreakdownState, setStatusBreakdownState] = useState({
+    completed: 0,
+    processing: 0,
+    pendingData: 0,
+    cancelled: 0,
+  });
+  const [dateRange, setDateRange] = useState("");
+  const [monthlyData, setMonthlyData] = useState<{ totals: number[]; completed: number[]; labels: string[] }>({ totals: [0,0,0,0,0,0], completed: [0,0,0,0,0,0], labels: [] });
+  const [adminName, setAdminName] = useState("أحمد");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("adminUser");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setAdminName(parsed);
+        } catch {
+          setAdminName("أحمد");
+        }
+      }
+    }
+
+    // Set dynamic date range (30 days ago to today)
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    const formatDate = (d: Date) => {
+      return d.toLocaleDateString("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    };
+    setDateRange(`${formatDate(thirtyDaysAgo)} - ${formatDate(today)}`);
+
+    async function loadAdminData() {
+      try {
+        setLoading(true);
+
+        // 1. Fetch all partners and admin users to filter out admins
+        const [partnersRes, adminUsersRes] = await Promise.all([
+          supabase.from("partners").select("*"),
+          supabase.from("admin_users").select("email")
+        ]);
+
+        const adminEmails = new Set((adminUsersRes.data || []).map(u => u.email.toLowerCase()));
+        adminEmails.add("admin@goforvisa.ma"); // fallback
+
+        const realPartners = (partnersRes.data || []).filter(p => p.email && !adminEmails.has(p.email.toLowerCase()));
+        const partnersCount = realPartners.length;
+
+        // 2. Fetch clients data
+        const { data: clientsData, error: clientsErr } = await supabase
+          .from("clients")
+          .select("*, partners(company, name)");
+
+        // 3. Fetch payouts data
+        const { data: payoutsData, error: payoutsErr } = await supabase
+          .from("payouts")
+          .select("*");
+
+        if (clientsErr || payoutsErr) {
+          console.error(clientsErr, payoutsErr);
+          return;
+        }
+
+        const clientsList = clientsData || [];
+        const payoutsList = payoutsData || [];
+
+        // Monthly file counts for the line chart (last 6 months - based on raw data)
+        const monthlyTotals: number[] = [];
+        const monthlyCompleted: number[] = [];
+        const monthLabels: string[] = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const tYear = d.getFullYear();
+          const tMonth = d.getMonth();
+          monthLabels.push(d.toLocaleDateString("ar-EG", { month: "long" }));
+          monthlyTotals.push(clientsList.filter(c => {
+            const cd = new Date(c.created_at);
+            return cd.getFullYear() === tYear && cd.getMonth() === tMonth;
+          }).length);
+          monthlyCompleted.push(clientsList.filter(c => {
+            if (c.status !== "تم الإنجاز") return false;
+            const cd = new Date(c.created_at);
+            return cd.getFullYear() === tYear && cd.getMonth() === tMonth;
+          }).length);
+        }
+
+        // Recent Files (limit 5)
+        const sortedRecentFiles = [...clientsList]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 5);
+
+        // Fetch recent partners (limit 5) and filter out admin/employees
+        const realRecentPartners = realPartners
+          .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+          .slice(0, 5);
+
+        setStats(prev => ({
+          ...prev,
+          activePartners: partnersCount
+        }));
+        
+        setRawClients(clientsList);
+        setRawPayouts(payoutsList);
+        setRecentFiles(sortedRecentFiles);
+        setRecentPartners(realRecentPartners);
+        setMonthlyData({ totals: monthlyTotals, completed: monthlyCompleted, labels: monthLabels });
+
+      } catch (err) {
+        console.error("Error loading admin dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAdminData();
+
+    // Subscribe to realtime database changes
+    const channel = supabase
+      .channel("admin_dashboard_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, () => {
+        console.log("Realtime change detected in clients table for admin dashboard.");
+        loadAdminData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "payouts" }, () => {
+        console.log("Realtime change detected in payouts table for admin dashboard.");
+        loadAdminData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "partners" }, () => {
+        console.log("Realtime change detected in partners table for admin dashboard.");
+        loadAdminData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const getCountryFlag = (countryName: string) => {
+    if (countryName.includes("المملكة المتحدة") || countryName.includes("بريطانيا") || countryName.includes("UK") || countryName.includes("Uk")) return <UkFlag />;
+    if (countryName.includes("كندا")) return <CanadaFlag />;
+    if (countryName.includes("الولايات المتحدة") || countryName.includes("أمريكا") || countryName.includes("USA") || countryName.includes("Usa")) return <UsaFlag />;
+    if (countryName.includes("الدنمارك")) return <DenmarkFlag />;
+    if (countryName.includes("أستراليا")) return <AustraliaFlag />;
+    return <UsaFlag />;
+  };
+
+  // Filter clients based on timeRange
+  const filteredClients = rawClients.filter(c => {
+    if (!c.created_at) return true;
+    const createdDate = new Date(c.created_at);
+    const today = new Date();
+    
+    const createdZero = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+    const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (timeRange === "today") {
+      return createdZero.getTime() === todayZero.getTime();
+    }
+    if (timeRange === "7days") {
+      const sevenDaysAgo = new Date(todayZero);
+      sevenDaysAgo.setDate(todayZero.getDate() - 7);
+      return createdZero >= sevenDaysAgo;
+    }
+    if (timeRange === "thisMonth") {
+      return createdZero.getMonth() === todayZero.getMonth() && createdZero.getFullYear() === todayZero.getFullYear();
+    }
+    if (timeRange === "30days") {
+      const thirtyDaysAgo = new Date(todayZero);
+      thirtyDaysAgo.setDate(todayZero.getDate() - 30);
+      return createdZero >= thirtyDaysAgo;
+    }
+    return true; // "all"
+  });
+
+  const filteredPayouts = rawPayouts.filter(w => {
+    if (!w.created_at) return true;
+    const createdDate = new Date(w.created_at);
+    const today = new Date();
+    
+    const createdZero = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+    const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (timeRange === "today") {
+      return createdZero.getTime() === todayZero.getTime();
+    }
+    if (timeRange === "7days") {
+      const sevenDaysAgo = new Date(todayZero);
+      sevenDaysAgo.setDate(todayZero.getDate() - 7);
+      return createdZero >= sevenDaysAgo;
+    }
+    if (timeRange === "thisMonth") {
+      return createdZero.getMonth() === todayZero.getMonth() && createdZero.getFullYear() === todayZero.getFullYear();
+    }
+    if (timeRange === "30days") {
+      const thirtyDaysAgo = new Date(todayZero);
+      thirtyDaysAgo.setDate(todayZero.getDate() - 30);
+      return createdZero >= thirtyDaysAgo;
+    }
+    return true; // "all"
+  });
+
+  // Dynamic Calculations based on filtered data
+  const totalFiles = filteredClients.length;
+  const completedFiles = filteredClients.filter(c => c.status === "تم الإنجاز").length;
+  const activePartners = stats.activePartners;
+
+  const totalRevenue = filteredClients.reduce((sum, c) => sum + Number(c.total_fee || 0), 0);
+  
+  const totalCommissions = filteredClients
+    .filter(c => c.status === "تم الإنجاز")
+    .reduce((sum, c) => sum + Number(c.commission || 0), 0);
+
+  const paidCommissions = filteredPayouts
+    .filter(w => w.status === "تم التحويل" || w.status === "تم الدفع")
+    .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+  const pendingCommissions = filteredPayouts
+    .filter(w => w.status === "قيد المراجعة")
+    .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+
+  const dueCommissions = totalCommissions - paidCommissions - pendingCommissions;
+
+  const statusBreakdown = {
+    completed: filteredClients.filter(c => c.status === "تم الإنجاز").length,
+    processing: filteredClients.filter(c => c.status === "قيد المعالجة").length,
+    pendingData: filteredClients.filter(c => c.status === "في انتظار البيانات").length,
+    cancelled: filteredClients.filter(c => c.status === "ملغى").length,
+  };
+
+  const total = totalFiles || 1;
+  const pctCompleted = (statusBreakdown.completed / total) * 100;
+  const pctProcessing = (statusBreakdown.processing / total) * 100;
+  const pctPendingData = (statusBreakdown.pendingData / total) * 100;
+  const pctCancelled = (statusBreakdown.cancelled / total) * 100;
+
+  const lenCompleted = (statusBreakdown.completed / total) * 219.9;
+  const lenProcessing = (statusBreakdown.processing / total) * 219.9;
+  const lenPendingData = (statusBreakdown.pendingData / total) * 219.9;
+  const lenCancelled = (statusBreakdown.cancelled / total) * 219.9;
+
+  const offsetCompleted = 0;
+  const offsetProcessing = -lenCompleted;
+  const offsetPending = -(lenCompleted + lenProcessing);
+  const offsetCancelled = -(lenCompleted + lenProcessing + lenPendingData);
+
+  // Search Filtered Lists
+  const filteredRecentFiles = recentFiles.filter(file => {
+    if (!searchQuery) return true;
+    const term = searchQuery.toLowerCase();
+    return (
+      (file.name || "").toLowerCase().includes(term) ||
+      (file.file_number || "").toLowerCase().includes(term) ||
+      (file.partners?.name || "").toLowerCase().includes(term) ||
+      (file.partners?.company || "").toLowerCase().includes(term)
+    );
+  });
+
+  const filteredRecentPartners = recentPartners.filter(partner => {
+    if (!searchQuery) return true;
+    const term = searchQuery.toLowerCase();
+    return (
+      (partner.name || "").toLowerCase().includes(term) ||
+      (partner.company || "").toLowerCase().includes(term) ||
+      (partner.email || "").toLowerCase().includes(term)
+    );
+  });
+
+  const getSelectedLabel = () => {
+    const today = new Date();
+    const formatDate = (d: Date) => {
+      return d.toLocaleDateString("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    };
+
+    if (timeRange === "today") {
+      return `اليوم (${formatDate(today)})`;
+    }
+    if (timeRange === "7days") {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      return `${formatDate(sevenDaysAgo)} - ${formatDate(today)}`;
+    }
+    if (timeRange === "thisMonth") {
+      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      return `${formatDate(firstOfMonth)} - ${formatDate(today)}`;
+    }
+    if (timeRange === "30days") {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      return `${formatDate(thirtyDaysAgo)} - ${formatDate(today)}`;
+    }
+    return "كل الأوقات";
+  };
+
+  // Dynamic Line Chart coordinates
+  const chartMaxVal = Math.max(...monthlyData.totals, 1);
+  const xPositions = [48, 94, 140, 186, 232, 280];
+  const getChartY = (val: number) => 110 - (val / chartMaxVal) * 100;
+
+  const totalPoints = monthlyData.totals.map((v, i) => `${xPositions[i]} ${getChartY(v)}`);
+  const completedPoints = monthlyData.completed.map((v, i) => `${xPositions[i]} ${getChartY(v)}`);
+
+  const totalPathD = `M ${totalPoints.join(" L ")}`;
+  const totalFillD = `${totalPathD} L 280 110 L 48 110 Z`;
+  const completedPathD = `M ${completedPoints.join(" L ")}`;
+  const completedFillD = `${completedPathD} L 280 110 L 48 110 Z`;
+
+  // Y-axis label values
+  const yAxisStep = chartMaxVal / 4;
+  const yAxisLabels = [0, Math.round(yAxisStep), Math.round(yAxisStep * 2), Math.round(yAxisStep * 3), Math.round(chartMaxVal)];
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-[#0054A6] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-sm font-bold">جاري تحميل بيانات لوحة التحكم...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-12">
       
-      {/* Header Area matching Screenshot 5 */}
+      {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="text-right">
-          <h1 className="text-2xl font-black text-slate-800">مرحباً أحمد، أهلاً بك في لوحة التحكم</h1>
+          <h1 className="text-2xl font-black text-slate-800">مرحباً {adminName}، أهلاً بك في لوحة التحكم</h1>
           <p className="text-xs text-slate-500 font-medium mt-1">إليك ملخص شامل لأداء المنصة اليوم</p>
         </div>
 
         {/* Date Selector */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200/80 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 text-xs font-bold shadow-xs cursor-pointer">
+        <div className="relative shrink-0 z-20">
+          <button 
+            onClick={() => setDateFilterOpen(!dateFilterOpen)}
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200/80 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 text-xs font-bold shadow-xs cursor-pointer"
+          >
             <Calendar className="w-4 h-4 text-slate-400" />
-            <span>15 مايو 2024 - 15 يونيو 2024</span>
+            <span>{getSelectedLabel()}</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
           </button>
+          {dateFilterOpen && (
+            <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-30 text-right">
+              <button 
+                onClick={() => { setTimeRange("all"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "all" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                كل الأوقات
+              </button>
+              <button 
+                onClick={() => { setTimeRange("today"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "today" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                اليوم
+              </button>
+              <button 
+                onClick={() => { setTimeRange("7days"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "7days" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                آخر 7 أيام
+              </button>
+              <button 
+                onClick={() => { setTimeRange("thisMonth"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "thisMonth" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                هذا الشهر
+              </button>
+              <button 
+                onClick={() => { setTimeRange("30days"); setDateFilterOpen(false); }} 
+                className={`w-full text-right px-4 py-2 text-xs font-bold hover:bg-slate-50 ${timeRange === "30days" ? "text-blue-600 bg-blue-50/50" : "text-slate-700"}`}
+              >
+                آخر 30 يوم
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* KPI Cards Row (5 Cards) ordered from right to left (RTL) matching Screenshot:
-          Active Partners -> Completed Files -> Total Files -> Due Commissions -> Total Revenue */}
+      {/* KPI Cards Row (5 Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         
-        {/* Card 1: الشركاء النشطين (Active Partners) */}
+        {/* Card 1: الشركاء النشطين */}
         <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
           <div className="text-right flex-1 min-w-0">
             <span className="text-[10px] text-slate-400 font-extrabold block truncate">الشركاء النشطين</span>
-            <span className="text-xl xl:text-2xl font-black text-slate-800 block mt-1 leading-none">342</span>
+            <span className="text-xl xl:text-2xl font-black text-slate-800 block mt-1 leading-none">{activePartners}</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
-              <span className="text-[9px] font-black">10.2%+ عن الفترة السابقة</span>
+              <span className="text-[9px] font-black">شريك مسجل بالكامل</span>
             </div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
@@ -125,14 +552,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 2: الملفات المنجزة (Completed Files) */}
+        {/* Card 2: الملفات المنجزة */}
         <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
           <div className="text-right flex-1 min-w-0">
             <span className="text-[10px] text-slate-400 font-extrabold block truncate">الملفات المنجزة</span>
-            <span className="text-xl xl:text-2xl font-black text-[#059669] block mt-1 leading-none">856</span>
+            <span className="text-xl xl:text-2xl font-black text-[#059669] block mt-1 leading-none">{completedFiles}</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
-              <span className="text-[9px] font-black">18.3%+ عن الفترة السابقة</span>
+              <span className="text-[9px] font-black">
+                {totalFiles > 0 ? ((completedFiles / totalFiles) * 100).toFixed(1) : 0}% من الإجمالي
+              </span>
             </div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
@@ -140,14 +569,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 3: إجمالي الملفات (Total Files) */}
+        {/* Card 3: إجمالي الملفات */}
         <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
           <div className="text-right flex-1 min-w-0">
             <span className="text-[10px] text-slate-400 font-extrabold block truncate">إجمالي الملفات</span>
-            <span className="text-xl xl:text-2xl font-black text-[#0054A6] block mt-1 leading-none">1,248</span>
+            <span className="text-xl xl:text-2xl font-black text-[#0054A6] block mt-1 leading-none">{totalFiles}</span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
-              <span className="text-[9px] font-black">15.7%+ عن الفترة السابقة</span>
+              <span className="text-[9px] font-black">ملف مسجل بالمنصة</span>
             </div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
@@ -155,14 +584,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 4: العمولات المستحقة (Due Commissions) */}
+        {/* Card 4: العمولات العادية/المستحقة */}
         <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
           <div className="text-right flex-1 min-w-0">
             <span className="text-[10px] text-slate-400 font-extrabold block truncate">العمولات المستحقة</span>
-            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-amber-500 block mt-1 leading-none" dir="ltr">45,250.00 DH</span>
+            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-amber-500 block mt-1 leading-none" dir="ltr">
+              {dueCommissions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
-              <span className="text-[9px] font-black">8.3%+ عن الفترة السابقة</span>
+              <span className="text-[9px] font-black">متبقية للدفع</span>
             </div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50">
@@ -170,14 +601,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 5: إجمالي الإيرادات (Total Revenue) */}
+        {/* Card 5: إجمالي الإيرادات */}
         <div className="bg-white rounded-3xl p-5 lg:p-4 xl:p-5 border border-slate-100/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
           <div className="text-right flex-1 min-w-0">
             <span className="text-[10px] text-slate-400 font-extrabold block truncate">إجمالي الإيرادات</span>
-            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-emerald-600 block mt-1 leading-none" dir="ltr">120,450.00 DH</span>
+            <span className="text-base sm:text-lg lg:text-sm xl:text-base 2xl:text-lg font-black text-emerald-600 block mt-1 leading-none" dir="ltr">
+              {totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+            </span>
             <div className="flex items-center gap-1 mt-1.5 text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[3]" />
-              <span className="text-[9px] font-black">12.5%+ عن الفترة السابقة</span>
+              <span className="text-[9px] font-black">قيمة جميع الملفات</span>
             </div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50">
@@ -187,94 +620,86 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* Main Grid Layout: Left Column (Wide) & Right Column (Narrow) */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        {/* Left Column: Charts & Tables (spans 2 on desktop) */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* Charts Row: Doughnut on the Right (first in HTML), Line Chart on the Left (second in HTML) */}
+          {/* Charts Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Chart 1: Doughnut Chart "توزيع الملفات حسب الحالة" (aligned to right in RTL) */}
+            {/* Chart 1: Doughnut Chart */}
             <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-4 flex flex-col justify-between">
               <h3 className="font-extrabold text-slate-800 text-sm">توزيع الملفات حسب الحالة</h3>
 
               <div className="flex items-center justify-between gap-4 py-1">
                 
-                {/* Legend on the right */}
+                {/* Legend */}
                 <div className="flex-1 space-y-1.5 text-right">
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">278 (22.3%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {statusBreakdown.completed} ({pctCompleted.toFixed(1)}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
-                      <span className="text-slate-500">جديد</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">192 (15.4%)</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0"></span>
-                      <span className="text-slate-500">تم التواصل مع العميل</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">256 (20.5%)</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                      <span className="text-slate-500">قيد إعداد الملف</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">410 (32.9%)</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-purple-50 shrink-0"></span>
-                      <span className="text-slate-500">قيد المعالجة</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">86 (6.9%)</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-50 shrink-0"></span>
                       <span className="text-slate-500">تم الإنجاز</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] font-bold">
-                    <span className="text-slate-400 font-medium">26 (2.0%)</span>
+                    <span className="text-slate-400 font-medium">
+                      {statusBreakdown.processing} ({pctProcessing.toFixed(1)}%)
+                    </span>
                     <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">قيد المعالجة</span>
+                      <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0"></span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] font-bold">
+                    <span className="text-slate-400 font-medium">
+                      {statusBreakdown.pendingData} ({pctPendingData.toFixed(1)}%)
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">في انتظار البيانات</span>
+                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] font-bold">
+                    <span className="text-slate-400 font-medium">
+                      {statusBreakdown.cancelled} ({pctCancelled.toFixed(1)}%)
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">ملغى</span>
                       <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-                      <span className="text-slate-500">مرفوض</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Doughnut SVG on the left */}
+                {/* Doughnut SVG */}
                 <div className="w-28 h-28 flex items-center justify-center shrink-0 relative">
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none mt-1">
-                    <span className="text-lg font-black text-slate-800 leading-none">1,248</span>
+                    <span className="text-lg font-black text-slate-800 leading-none">
+                      {totalFiles.toLocaleString()}
+                    </span>
                     <span className="text-[6px] text-slate-400 font-bold block mt-1">إجمالي الملفات</span>
                   </div>
 
                   <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    {/* Blue (جديد) - 22.3% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#3B82F6" strokeWidth="11" strokeDasharray="49 219.9" strokeDashoffset="0" />
-                    {/* Sky (تم التواصل) - 15.4% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#38BDF8" strokeWidth="11" strokeDasharray="33.8 219.9" strokeDashoffset="-49" />
-                    {/* Amber (قيد الإعداد) - 20.5% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#F59E0B" strokeWidth="11" strokeDasharray="45 219.9" strokeDashoffset="-82.8" />
-                    {/* Purple (قيد المعالجة) - 32.9% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#A855F7" strokeWidth="11" strokeDasharray="72.3 219.9" strokeDashoffset="-127.8" />
-                    {/* Emerald (تم الإنجاز) - 6.9% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#10B981" strokeWidth="11" strokeDasharray="15.2 219.9" strokeDashoffset="-200.1" />
-                    {/* Rose (مرفوض) - 2.0% */}
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#EF4444" strokeWidth="11" strokeDasharray="4.6 219.9" strokeDashoffset="-215.3" />
+                    {/* Emerald (تم الإنجاز) */}
+                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#10B981" strokeWidth="11" strokeDasharray={`${lenCompleted} 219.9`} strokeDashoffset={offsetCompleted} />
+                    {/* Purple (قيد المعالجة) */}
+                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#A855F7" strokeWidth="11" strokeDasharray={`${lenProcessing} 219.9`} strokeDashoffset={offsetProcessing} />
+                    {/* Amber (في انتظار البيانات) */}
+                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#F59E0B" strokeWidth="11" strokeDasharray={`${lenPendingData} 219.9`} strokeDashoffset={offsetPending} />
+                    {/* Rose (ملغى) */}
+                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#EF4444" strokeWidth="11" strokeDasharray={`${lenCancelled} 219.9`} strokeDashoffset={offsetCancelled} />
                   </svg>
                 </div>
 
               </div>
             </div>
 
-            {/* Chart 2: Line Chart "الملفات خلال الأشهر السنة الماضية" (aligned to left in RTL) */}
+            {/* Chart 2: Line Chart */}
             <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-4 flex flex-col justify-between">
               <div className="flex justify-between items-center">
                 <h3 className="font-extrabold text-slate-800 text-sm">الملفات خلال الأشهر السنة الماضية</h3>
@@ -307,32 +732,33 @@ export default function AdminDashboard() {
                   <line x1="25" y1="85" x2="285" y2="85" stroke="#F1F5F9" strokeWidth="1" />
                   <line x1="25" y1="110" x2="285" y2="110" stroke="#F1F5F9" strokeWidth="1" />
 
-                  {/* Left Axes Labels (aligned properly) */}
-                  <text x="18" y="113" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">0</text>
-                  <text x="18" y="88" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">100</text>
-                  <text x="18" y="63" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">200</text>
-                  <text x="18" y="38" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">300</text>
-                  <text x="18" y="13" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">400</text>
+                  {/* Left Axes Labels - dynamic */}
+                  <text x="18" y="113" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">{yAxisLabels[0]}</text>
+                  <text x="18" y="88" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">{yAxisLabels[1]}</text>
+                  <text x="18" y="63" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">{yAxisLabels[2]}</text>
+                  <text x="18" y="38" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">{yAxisLabels[3]}</text>
+                  <text x="18" y="13" textAnchor="end" className="text-[8px] fill-slate-350 font-bold">{yAxisLabels[4]}</text>
 
-                  {/* X-axis labels (shifted right for safe space) */}
-                  <text x="48" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">ديسمبر</text>
-                  <text x="94" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">يناير</text>
-                  <text x="140" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">فبراير</text>
-                  <text x="186" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مارس</text>
-                  <text x="232" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">أبريل</text>
-                  <text x="280" y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">مايو</text>
+                  {/* X-axis labels - dynamic month names */}
+                  {monthlyData.labels.map((label, i) => (
+                    <text key={i} x={xPositions[i]} y="126" textAnchor="middle" className="text-[8px] fill-slate-400 font-bold">{label}</text>
+                  ))}
 
-                  {/* Path 1: Total Files (Blue) */}
-                  <path d="M 48 70.7 L 94 52.7 L 140 50.5 L 186 37.0 L 232 28.0 L 280 20 L 280 110 L 48 110 Z" fill="url(#blue-grad-3)" />
-                  <path d="M 48 70.7 L 94 52.7 L 140 50.5 L 186 37.0 L 232 28.0 L 280 20" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Dynamic total files path */}
+                  <path d={totalFillD} fill="url(#blue-grad-3)" />
+                  <path d={totalPathD} fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   
-                  {/* Path 2: Completed Files (Green) */}
-                  <path d="M 48 86.5 L 94 75.2 L 140 75.2 L 186 50.5 L 232 48.2 L 280 40 L 280 110 L 48 110 Z" fill="url(#green-grad-3)" />
-                  <path d="M 48 86.5 L 94 75.2 L 140 75.2 L 186 50.5 L 232 48.2 L 280 40" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Dynamic completed files path */}
+                  <path d={completedFillD} fill="url(#green-grad-3)" />
+                  <path d={completedPathD} fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
-                  {/* Data points dots */}
-                  <circle cx="280" cy="20" r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
-                  <circle cx="280" cy="40" r="3" fill="#FFFFFF" stroke="#10B981" strokeWidth="2" />
+                  {/* Dots on each data point */}
+                  {monthlyData.totals.map((v, i) => (
+                    <circle key={`t-${i}`} cx={xPositions[i]} cy={getChartY(v)} r="3" fill="#FFFFFF" stroke="#2563EB" strokeWidth="2" />
+                  ))}
+                  {monthlyData.completed.map((v, i) => (
+                    <circle key={`c-${i}`} cx={xPositions[i]} cy={getChartY(v)} r="3" fill="#FFFFFF" stroke="#10B981" strokeWidth="2" />
+                  ))}
                 </svg>
               </div>
 
@@ -343,7 +769,7 @@ export default function AdminDashboard() {
                   <span>إجمالي الملفات</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-550"></span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                   <span>الملفات المنجزة</span>
                 </div>
               </div>
@@ -351,7 +777,7 @@ export default function AdminDashboard() {
 
           </div>
 
-          {/* Table Card: آخر الملفات المرسلة */}
+          {/* Table Card */}
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs flex flex-col justify-between">
             <div className="space-y-4">
               {/* Header */}
@@ -364,7 +790,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto font-medium">
                 <table className="w-full text-xs text-right text-slate-650 font-medium">
                   <thead>
                     <tr className="text-slate-400 font-bold border-b border-slate-100">
@@ -378,132 +804,57 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    
-                    {/* Row 1 */}
-                    <tr className="hover:bg-slate-50/40 transition-colors">
-                      <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">GFV-2024-001248</td>
-                      <td className="py-4 text-slate-850 font-extrabold">محمد علي</td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-1.5" dir="rtl">
-                          <FranceFlag />
-                          <span className="text-[10px] text-slate-500 font-bold">فرنسا</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-slate-500 text-[10px] font-bold">شركة الياسمين</td>
-                      <td className="py-4 text-slate-400 text-[10px]">15 مايو 2024 - 14:30</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black bg-purple-50 text-purple-650 whitespace-nowrap">
-                          جاري المعالجة
-                        </span>
-                      </td>
-                      <td className="py-4 text-left">
-                        <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
-                          عرض
-                        </Link>
-                      </td>
-                    </tr>
+                    {filteredRecentFiles.map((file, idx) => {
+                      const company = file.partners?.company || file.partners?.name || "شريك عام";
+                      const dateStr = new Date(file.created_at).toLocaleDateString("ar-EG", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      });
+                      
+                      let statusBg = "bg-slate-50 text-slate-500 border border-slate-200";
+                      if (file.status === "تم الإنجاز") statusBg = "bg-emerald-50 text-emerald-600";
+                      else if (file.status === "قيد المعالجة") statusBg = "bg-purple-50 text-purple-650";
+                      else if (file.status === "في انتظار البيانات") statusBg = "bg-amber-50 text-amber-600";
+                      else if (file.status === "ملغى") statusBg = "bg-rose-50 text-rose-600 border border-rose-100";
 
-                    {/* Row 2 */}
-                    <tr className="hover:bg-slate-50/40 transition-colors">
-                      <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">GFV-2024-001247</td>
-                      <td className="py-4 text-slate-850 font-extrabold">فاطمة الزهراء</td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-1.5" dir="rtl">
-                          <SpainFlag />
-                          <span className="text-[10px] text-slate-500 font-bold">إسبانيا</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-slate-500 text-[10px] font-bold">أبو بكر لخدمات السفر</td>
-                      <td className="py-4 text-slate-400 text-[10px]">15 مايو 2024 - 13:15</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black bg-blue-50 text-[#0054A6] whitespace-nowrap">
-                          قيد إعداد الملف
-                        </span>
-                      </td>
-                      <td className="py-4 text-left">
-                        <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
-                          عرض
-                        </Link>
-                      </td>
-                    </tr>
-
-                    {/* Row 3 */}
-                    <tr className="hover:bg-slate-50/40 transition-colors">
-                      <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">GFV-2024-001246</td>
-                      <td className="py-4 text-slate-850 font-extrabold">أحمد رضا</td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-1.5" dir="rtl">
-                          <ItalyFlag />
-                          <span className="text-[10px] text-slate-500 font-bold">إيطاليا</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-slate-500 text-[10px] font-bold">شركة الياسمين</td>
-                      <td className="py-4 text-slate-400 text-[10px]">15 مايو 2024 - 11:20</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black bg-amber-50 text-amber-600 whitespace-nowrap">
-                          تم التواصل مع العميل
-                        </span>
-                      </td>
-                      <td className="py-4 text-left">
-                        <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
-                          عرض
-                        </Link>
-                      </td>
-                    </tr>
-
-                    {/* Row 4 */}
-                    <tr className="hover:bg-slate-50/40 transition-colors">
-                      <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">GFV-2024-001245</td>
-                      <td className="py-4 text-slate-850 font-extrabold">سارة بنت عبد الله</td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-1.5" dir="rtl">
-                          <TurkeyFlag />
-                          <span className="text-[10px] text-slate-500 font-bold">تركيا</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-slate-500 text-[10px] font-bold">رحال للسياحة</td>
-                      <td className="py-4 text-slate-400 text-[10px]">15 مايو 2024 - 10:05</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-600 whitespace-nowrap">
-                          تم الإنجاز
-                        </span>
-                      </td>
-                      <td className="py-4 text-left">
-                        <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
-                          عرض
-                        </Link>
-                      </td>
-                    </tr>
-
-                    {/* Row 5 */}
-                    <tr className="hover:bg-slate-50/40 transition-colors">
-                      <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">GFV-2024-001244</td>
-                      <td className="py-4 text-slate-850 font-extrabold">يوسف بلال</td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-1.5" dir="rtl">
-                          <GermanyFlag />
-                          <span className="text-[10px] text-slate-500 font-bold">ألمانيا</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-slate-500 text-[10px] font-bold">أبو بكر لخدمات السفر</td>
-                      <td className="py-4 text-slate-400 text-[10px]">15 مايو 2024 - 09:40</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black bg-slate-50 text-slate-500 border border-slate-200 whitespace-nowrap">
-                          جديد
-                        </span>
-                      </td>
-                      <td className="py-4 text-left">
-                        <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
-                          عرض
-                        </Link>
-                      </td>
-                    </tr>
-
+                      return (
+                        <tr key={file.id || idx} className="hover:bg-slate-50/40 transition-colors">
+                          <td className="py-4 pr-1 font-bold text-slate-800 text-[10px]">{file.file_number}</td>
+                          <td className="py-4 text-slate-850 font-extrabold">{file.name}</td>
+                          <td className="py-4">
+                            <div className="flex items-center gap-1.5" dir="rtl">
+                              {getCountryFlag(file.country)}
+                              <span className="text-[10px] text-slate-500 font-bold">{file.country}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 text-slate-500 text-[10px] font-bold">{company}</td>
+                          <td className="py-4 text-slate-400 text-[10px]">{dateStr}</td>
+                          <td className="py-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black whitespace-nowrap ${statusBg}`}>
+                              {file.status}
+                            </span>
+                          </td>
+                          <td className="py-4 text-left">
+                            <Link href="/admin/files" className="px-3 py-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg inline-block transition-colors font-bold text-[10px] shadow-3xs">
+                              عرض
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredRecentFiles.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-slate-400 text-xs font-bold">لا توجد ملفات حالياً.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Bottom Centered "عرض جميع الملفات" Trigger */}
+              {/* Bottom Centered Link */}
               <div className="pt-2 border-t border-slate-50 flex justify-center">
                 <Link 
                   href="/admin/files" 
@@ -518,10 +869,10 @@ export default function AdminDashboard() {
 
         </div>
 
-        {/* Right Column: Mini stats and new partner list */}
+        {/* Right Column */}
         <div className="space-y-6">
           
-          {/* Card 1: العمولات والأرباح Summary */}
+          {/* Card 1: العمولات والأرباح */}
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-5">
             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
               <h3 className="font-extrabold text-slate-800 text-sm">العمولات والأرباح</h3>
@@ -534,7 +885,9 @@ export default function AdminDashboard() {
               
               {/* Row 1: إجمالي العمولات */}
               <div className="flex items-center justify-between py-2.5 border-b border-slate-50">
-                <span className="text-xs font-black text-slate-800" dir="ltr">60,750.00 DH</span>
+                <span className="text-xs font-black text-slate-800" dir="ltr">
+                  {(paidCommissions + dueCommissions + pendingCommissions).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
                 <div className="flex items-center gap-2.5">
                   <span className="text-xs text-slate-500 font-bold">إجمالي العمولات</span>
                   <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-3xs border border-purple-100/50">
@@ -545,7 +898,9 @@ export default function AdminDashboard() {
 
               {/* Row 2: مدفوعة */}
               <div className="flex items-center justify-between py-2.5 border-b border-slate-50">
-                <span className="text-xs font-black text-emerald-600" dir="ltr">15,500.00 DH</span>
+                <span className="text-xs font-black text-emerald-600" dir="ltr">
+                  {paidCommissions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
                 <div className="flex items-center gap-2.5">
                   <span className="text-xs text-slate-500 font-bold">مدفوعة</span>
                   <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-3xs border border-emerald-100/50">
@@ -556,7 +911,9 @@ export default function AdminDashboard() {
 
               {/* Row 3: قيد المراجعة */}
               <div className="flex items-center justify-between py-2.5 border-b border-slate-50">
-                <span className="text-xs font-black text-amber-500" dir="ltr">20,000.00 DH</span>
+                <span className="text-xs font-black text-amber-500" dir="ltr">
+                  {pendingCommissions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
                 <div className="flex items-center gap-2.5">
                   <span className="text-xs text-slate-500 font-bold">قيد المراجعة</span>
                   <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-3xs border border-amber-100/50">
@@ -567,7 +924,9 @@ export default function AdminDashboard() {
 
               {/* Row 4: المتبقية للدفع */}
               <div className="flex items-center justify-between py-2.5">
-                <span className="text-xs font-black text-[#0054A6]" dir="ltr">25,250.00 DH</span>
+                <span className="text-xs font-black text-[#0054A6]" dir="ltr">
+                  {dueCommissions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DH
+                </span>
                 <div className="flex items-center gap-2.5">
                   <span className="text-xs text-slate-500 font-bold">المتبقية للدفع</span>
                   <div className="w-8 h-8 rounded-full bg-blue-50 text-[#0054A6] flex items-center justify-center shrink-0 shadow-3xs border border-blue-100/50">
@@ -597,49 +956,30 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-4 pt-1">
-              
-              {/* Partner 1 */}
-              <div className="flex items-center justify-between relative py-1">
-                <span className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">نشط</span>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <h4 className="text-xs font-extrabold text-slate-850">شركة الرحال للسياحة</h4>
-                    <span className="text-[9px] text-slate-400 font-bold block mt-0.5">انضم في 15 مايو 2024</span>
+              {filteredRecentPartners.map((p, idx) => {
+                const partnerDate = new Date(p.created_at).toLocaleDateString("ar-EG", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                });
+                return (
+                  <div key={p.id || idx} className="flex items-center justify-between relative py-1">
+                    <span className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">نشط</span>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <h4 className="text-xs font-extrabold text-slate-850">{p.company || p.name}</h4>
+                        <span className="text-[9px] text-slate-400 font-bold block mt-0.5">انضم في {partnerDate}</span>
+                      </div>
+                      <div className="w-10 h-10 rounded-2xl bg-purple-50 text-[#0054A6] flex items-center justify-center shrink-0 border border-purple-100/50 font-bold text-sm">
+                        <Building2 className="w-5 h-5 text-[#0054A6]" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-10 h-10 rounded-2xl bg-purple-50 text-[#0054A6] flex items-center justify-center shrink-0 border border-purple-100/50 font-bold text-sm">
-                    <Building2 className="w-5 h-5 text-[#0054A6]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Partner 2 */}
-              <div className="flex items-center justify-between relative py-1">
-                <span className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">نشط</span>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <h4 className="text-xs font-extrabold text-slate-850">سفريات الأندلس</h4>
-                    <span className="text-[9px] text-slate-400 font-bold block mt-0.5">انضم في 14 مايو 2024</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-2xl bg-purple-50 text-[#0054A6] flex items-center justify-center shrink-0 border border-purple-100/50 font-bold text-sm">
-                    <Building2 className="w-5 h-5 text-[#0054A6]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Partner 3 */}
-              <div className="flex items-center justify-between relative py-1">
-                <span className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">نشط</span>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <h4 className="text-xs font-extrabold text-slate-850">شركة الأفق للسفر</h4>
-                    <span className="text-[9px] text-slate-400 font-bold block mt-0.5">انضم في 13 مايو 2024</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-2xl bg-purple-50 text-[#0054A6] flex items-center justify-center shrink-0 border border-purple-100/50 font-bold text-sm">
-                    <Building2 className="w-5 h-5 text-[#0054A6]" />
-                  </div>
-                </div>
-              </div>
-
+                );
+              })}
+              {filteredRecentPartners.length === 0 && (
+                <div className="py-4 text-center text-slate-400 text-xs font-bold">لا يوجد شركاء حالياً.</div>
+              )}
             </div>
 
             <Link 
